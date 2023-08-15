@@ -1044,7 +1044,7 @@ def update_rels_tsv(pobj, row):
     print('from geowkt', geom)
   else:
     geom = None
-  print('geom', geom)
+  # print('geom', geom)
   # TODO:
   # if pobj is existing place, add geom only if it's new
   # if pobj is new place and row has geom, always add it
@@ -2762,10 +2762,10 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
       messages.error(self.request, message)
       return self.render_to_response(self.get_context_data(form=form))
 
-    if result:
-      dataset.numrows = result['numrows']
-      dataset.numlinked = result['numlinked']
-      dataset.total_links = result['total_links']
+    # if result:
+    #   dataset.numrows = result['numrows']
+    #   dataset.numlinked = result['numlinked']
+    #   dataset.total_links = result['total_links']
     dataset.ds_status = 'uploaded'
     dataset.save()
 
@@ -3224,9 +3224,12 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
         result = ds_insert_lpf(self.request, id_)
         print('lpf result',result)
       print('ds_insert_xxx() result',result)
-      ds.numrows = result['numrows']
+      ds.numrows = ds.places.count()
       ds.numlinked = result['numlinked']
-      ds.total_links = result['total_links']
+      ds.total_links = ds.total_links
+      # ds.numrows = result['numrows']
+      # ds.numlinked = result['numlinked']
+      # ds.total_links = result['total_links']
       ds.ds_status = 'uploaded'
       file.df_status = 'uploaded'
       file.numrows = result['numrows']
@@ -3234,6 +3237,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
       file.save()
 
     # build context for rendering ds_summary.html
+    # TODO: review these post-refactor of Aug 2023
     me = self.request.user
     placeset = ds.places.all()
 
@@ -3247,7 +3251,8 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     if file.file:
       context['current_file'] = file
       context['format'] = file.format
-      context['numrows'] = file.numrows
+      context['numrows'] = ds.places.count()
+      # context['numrows'] = file.numrows
       context['filesize'] = round(file.file.size/1000000, 1)
 
     # initial (non-task)

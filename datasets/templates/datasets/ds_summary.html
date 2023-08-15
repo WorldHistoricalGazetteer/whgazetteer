@@ -271,7 +271,7 @@
           <div id="ds_stats" class="ds-card">
             <table style="width:100%">
               <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
-              <tr><td><b>Records</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
+              <tr><td><b>Records</b></td><td>{{ numrows }}</td><td class="text-secondary">n/a</td></tr>
               <tr><td><b>Name variants</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
               <tr>
                 <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
@@ -301,7 +301,7 @@
               </p>
               {# TODO: review download size cases #}
 	            <!-- if length <= 20k -->
-              {% if ds.numrows <= 25000 %}
+              {% if numrows <= 25000 %}
                 <!-- lptsv originally -->
                 {% if current_file.format == 'delimited' %} 
                   <!-- offer lpf, augmented or not -->

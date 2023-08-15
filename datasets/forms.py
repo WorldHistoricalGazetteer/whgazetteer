@@ -156,7 +156,7 @@ class DatasetUploadForm(forms.ModelForm):
         return label
 
     def clean_file(self):
-        print('clean_file in DatasetUploadForm')
+        # print('clean_file in DatasetUploadForm')
         uploaded_file = self.cleaned_data['file']
 
         # Save the uploaded file to a temporary location

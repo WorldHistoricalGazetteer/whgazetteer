@@ -360,7 +360,7 @@ def download_augmented_slow(request, *args, **kwargs):
 # GeoJSON for all places in a dataset
 # feeds ds_browse (owner view); ds_places, collection_places (public)
 def fetch_geojson_ds(request, *args, **kwargs):
-	print('fetch_geojson_ds kwargs',kwargs)
+	# print('fetch_geojson_ds kwargs',kwargs)
 	dsid=kwargs['dsid']
 	ds=get_object_or_404(Dataset,pk=dsid)
 

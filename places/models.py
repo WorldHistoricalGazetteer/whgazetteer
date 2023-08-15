@@ -167,7 +167,6 @@ class PlaceType(models.Model):
   def __str__(self):
     return (self.jsonb['sourceLabel'] if 'sourceLabel' in self.jsonb else '') + \
        ('; ' + (self.jsonb['label'] if self.jsonb and 'label' in self.jsonb and self.jsonb['label'] else ''))
-    # ('; ' + self.jsonb['label'] if 'label' in self.jsonb else '')
 
   class Meta:
     managed = True

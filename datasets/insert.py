@@ -113,6 +113,7 @@ def process_types(row, newpl):
   types = [t.strip() for t in str(row.get('types', '')).split(';') if t]
   aat_types = [int(a.strip()) for a in str(row.get('aat_types', '')).split(';') if a]
   fclasses_from_row = [f.strip() for f in str(row.get('fclasses', '')).split(';') if f]
+  fclasses_from_row = [f.strip() for f in str(row.get('fclasses', '')).split(';') if f]
 
   # Build the PlaceType objects for each type and aat_type
   for type_, aat_type in zip_longest(types, aat_types, fillvalue=None):
@@ -229,7 +230,7 @@ def process_geom(row, newpl):
     except Exception as e:
       error_msgs.append(f"Error creating GEOSGeometry for place <b>{newpl} ({newpl.src_id})</b>. Details: {e}")
 
-  print('geom',geom_object.geom)
+  # print('geom',geom_object.geom)
 
   # Process ccodes
   if 'ccodes' in row and row['ccodes']:
@@ -260,8 +261,7 @@ def process_links(row, newpl):
     link_object = PlaceLink(
       place=newpl,
       src_id=newpl.src_id,
-      jsonb={"identifier": link, "type": "closeMatch"},
-      link=link.strip()
+      jsonb={"identifier": link, "type": "closeMatch"}
     )
     link_objects.append(link_object)
   return link_objects
@@ -308,6 +308,11 @@ def ds_insert_delim(df, pk):
   noplaces = Place.objects.filter(dataset=ds.label).count() == 0
   # print(f"new dataset: {ds.label}, uri_base: {uribase}")
 
+  # TEST
+  # duplicates = df[df.duplicated()]
+  # print("Duplicate Rows:", duplicates)
+  # END TEST
+
   # header = df.columns
   # print('df header', header)
 
@@ -322,55 +327,53 @@ def ds_insert_delim(df, pk):
 
   # Loop through rows for insert
   for index, row in df.iterrows():
-    # initialize empty lists for created objects
-    for index, row in df.iteritems():
-      # row = df.iloc[17] # Abu Tij (lots of info)
 
-      """
-        create new Place + a PlaceName record from its title
-      """
-      newpl = create_place(row, ds)
+    """
+      create new Place + a PlaceName record from its title
+    """
+    newpl = create_place(row, ds)
 
-      """
-      generate new related objects for objlists[]
-      """
-      # PlaceName
-      if 'variants' in df.columns and row['variants'] not in ['', None]:
-        objlists['PlaceName'].extend(process_variants(row, newpl))
+    """
+    generate new related objects for objlists[]
+    """
+    # PlaceName
+    if 'variants' in df.columns and row['variants'] not in ['', None]:
+      objlists['PlaceName'].extend(process_variants(row, newpl))
 
-      # PlaceType
-      relevant_columns = ['types', 'aat_types', 'fclasses']
-      if any(col in df.columns for col in relevant_columns) and \
-        any(row[col] not in ['', None] for col in relevant_columns):
-        objlists['PlaceType'].extend(process_types(row, newpl))
+    # PlaceType
+    relevant_columns = ['types', 'aat_types', 'fclasses']
+    if any(col in df.columns for col in relevant_columns) and \
+      any(row.get(col, None) not in ['', None] for col in relevant_columns):
+      objlists['PlaceType'].extend(process_types(row, newpl))
 
-      # PlaceWhen (always at least a start or attestation_year)
-      objlists['PlaceWhen'].extend(process_when(row, newpl))
+    # PlaceWhen (always at least a start or attestation_year)
+    objlists['PlaceWhen'].extend(process_when(row, newpl))
 
-      # PlaceGeom
-      if ('lat' in row and 'lon' in row and row['lat'] and row['lon']) or ('geowkt' in row and row['geowkt']):
-        objlists['PlaceGeom'].extend(process_geom(row, newpl))
+    # PlaceGeom
+    if ('lat' in row and 'lon' in row and row['lat'] and row['lon']) or ('geowkt' in row and row['geowkt']):
+      objlists['PlaceGeom'].extend(process_geom(row, newpl))
 
-      # PlaceLink
-      if ('matches' in row and row['matches']):
-        objlists['PlaceLink'].extend(process_links(row, newpl))
+    # PlaceLink
+    if ('matches' in row and row['matches']):
+      objlists['PlaceLink'].extend(process_links(row, newpl))
 
-      # PlaceRelated
-      if ('parent_name' in row and row['parent_name']):
-        objlists['PlaceRelated'].extend(process_related(row, newpl))
+    # PlaceRelated
+    if ('parent_name' in row and row['parent_name']):
+      objlists['PlaceRelated'].extend(process_related(row, newpl))
 
-      # PlaceDescription
-      if ('description' in row and row['description']):
-        objlists['PlaceDescription'].extend(process_descriptions(row, newpl))
+    # PlaceDescription
+    if ('description' in row and row['description']):
+      objlists['PlaceDescription'].extend(process_descriptions(row, newpl))
 
-    # bulk_create for each related model; NB no depictions in LP-Delim
-    PlaceName.objects.bulk_create(objlists['PlaceName'],batch_size=10000)
-    PlaceType.objects.bulk_create(objlists['PlaceType'],batch_size=10000)
-    PlaceGeom.objects.bulk_create(objlists['PlaceGeom'],batch_size=10000)
-    PlaceLink.objects.bulk_create(objlists['PlaceLink'],batch_size=10000)
-    PlaceRelated.objects.bulk_create(objlists['PlaceRelated'],batch_size=10000)
-    PlaceWhen.objects.bulk_create(objlists['PlaceWhen'],batch_size=10000)
-    PlaceDescription.objects.bulk_create(objlists['PlaceDescription'],batch_size=10000)
+  # print('PlaceWhen list', len(objlists['PlaceWhen']), objlists['PlaceWhen'][0].__dict__)
+  # bulk_create for each related model; NB no depictions in LP-Delim
+  PlaceName.objects.bulk_create(objlists['PlaceName'],batch_size=10000)
+  PlaceType.objects.bulk_create(objlists['PlaceType'],batch_size=10000)
+  PlaceGeom.objects.bulk_create(objlists['PlaceGeom'],batch_size=10000)
+  PlaceLink.objects.bulk_create(objlists['PlaceLink'],batch_size=10000)
+  PlaceRelated.objects.bulk_create(objlists['PlaceRelated'],batch_size=10000)
+  PlaceWhen.objects.bulk_create(objlists['PlaceWhen'],batch_size=10000)
+  PlaceDescription.objects.bulk_create(objlists['PlaceDescription'],batch_size=10000)
 
 
 """ 
