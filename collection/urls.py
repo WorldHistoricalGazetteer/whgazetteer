@@ -46,4 +46,11 @@ urlpatterns = [
 
     path('<int:id>/geojson/', views.fetch_geojson_coll, name="geojson-coll"),
 
+    ## COLLABORATORS
+    # add CollectionUser collaborator
+    path('collab-add/<int:collid>', views.collab_add, name="coll-collab-add"),
+
+    # delete CollectionUser collaborator
+    path('collab-delete/<int:uid>/<int:collid>', views.collab_delete, name="coll-collab-delete"),
+
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

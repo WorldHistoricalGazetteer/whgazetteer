@@ -102,6 +102,59 @@
 	        </span>
 	      </div>
 		    </form>
+
+			{% for c in collabs %}
+          {{ c|safe }} / {{ c.user_id }}
+      {% endfor %}
+        <!-- BEGIN collection_user -->
+		    <div id="collab" class="">
+		      <form id="sharing_form" method="POST"
+		            action="{% url 'collection:coll-collab-add' collid=object.id %}" enctype="multipart/form-data">
+		      {% csrf_token %}
+		      <div class="sharing-box my-3 w-50">
+		        <div class="sharing-header mb-0 pl-2 strong">Collaborators</div>
+		        <div class="smallish pl-2 mb-2">
+		          <p class="mb-2">Collaborators are registered WHG users, assigned per collection.</p>
+		          <p><sr>Members</sr> can do various stuff, TBD.
+			          <sr>Co-owners</sr> can perform all actions.</p>
+		        </div>
+			      {% if user.is_superuser or user in owners or editorial %}
+		          <div class="ml-2 my-2">
+		            <div class="form-check form-check-inline sharing-input">
+		              <span class="input-group">
+		                <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
+		                <div class="input-group-append">
+		                  <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
+		                </div>
+		              </span>
+		            </div>
+		            <div class="form-check form-check-inline">
+		              <input class="form-check-input hover" type="radio" name="role" id="r_place" value="member" checked="checked">
+		              <label class="form-check-label" for="r_place">Member</label>
+		            </div>
+		            <div class="form-check form-check-inline">
+		              <input class="form-check-input hover" type="radio" name="role" id="r_trace" value="owner">
+		              <label class="form-check-label" for="r_trace">Co-owner</label>
+		            </div>
+		          </div>
+		        {% endif %}
+		        <ul id="collabs_list">
+		          {% for c in collabs %}
+		            <li>
+		              {{ c|safe }} <!-- username, bold -->
+		              {% if user.is_superuser or user in owners %}
+		                <span class="float-right mr-2">
+		                <a href="{% url 'collection:coll-collab-delete' uid=c.user_id collid=object.id %}">
+		                {% fontawesome_icon 'times-circle' color='#336699'%}</a></span>
+		              {% endif %}
+		            </li>
+		          {% endfor %}
+		        </ul>
+		      </div>
+		      </form>
+		    </div> <!-- #collab -->
+        <!-- END collection_user -->
+
       </div> <!-- #coll_form -->
       <div id="coll_builder" class="col-sm-7 p-2">
           <h5>Datasets</h5>

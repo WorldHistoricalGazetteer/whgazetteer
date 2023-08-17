@@ -1,13 +1,13 @@
 # collection.views (collections)
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView )
 
-#from datasets.utils import hully
 from .forms import CollectionModelForm, CollectionLinkForm
 from .models import *
 from collection.models import Collection, CollectionImage
@@ -16,6 +16,35 @@ from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
 from itertools import chain
+
+"""
+  add collaborator to collection in role
+"""
+def collab_add(request, collid):
+  print('collab_add() request, dsid', request, collid)
+  try:
+    uid=get_object_or_404(User,username=request.POST['username']).id
+    role=request.POST['role']
+  except:
+    # TODO: raise error to screen
+    messages.add_message(
+      request, messages.INFO, "Please check username, we don't have '" + request.POST['username']+"'")
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+  print('collab_add():',request.POST['username'],role, collid, uid)
+  CollectionUser.objects.create(user_id_id=uid, dataset_id_id=collid, role=role)
+
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+"""
+  collab_delete(uid, dsid)
+  remove collaborator from collection
+"""
+def collab_delete(request, uid, collid, v):
+  print('collab_delete() request, uid, dsid', request, uid, collid)
+  get_object_or_404(CollectionUser,user_id_id=uid, dataset_id_id=collid).delete()
+
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 # sets collection to inactive, removing from lists
 def inactive(request, *args, **kwargs):
@@ -514,7 +543,8 @@ class DatasetCollectionUpdateView(UpdateView):
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
-    context['collabs'] = [c.user for c in self.object.collabs.all()]
+    # context['collabs'] = [c.user for c in self.object.collabs.all()]
+    context['collabs'] = self.object.collabs.all()
     context['editorial'] = True if user.groups.filter(name__in=['editorial']).exists() else False
 
     context['created'] = self.object.created.strftime("%Y-%m-%d")
