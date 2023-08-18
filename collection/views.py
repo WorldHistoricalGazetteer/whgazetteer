@@ -21,31 +21,45 @@ from itertools import chain
   add collaborator to collection in role
 """
 def collab_add(request, collid):
-  print('collab_add() request, dsid', request, collid)
-  try:
-    uid=get_object_or_404(User,username=request.POST['username']).id
-    role=request.POST['role']
-  except:
-    # TODO: raise error to screen
-    messages.add_message(
-      request, messages.INFO, "Please check username, we don't have '" + request.POST['username']+"'")
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-  print('collab_add():',request.POST['username'],role, collid, uid)
-  CollectionUser.objects.create(user_id=uid, collection_id=collid, role=role)
-  messages.add_message(request, messages.SUCCESS, 'form_submitted')
+  print('collab_add() POST', request.POST)
+  name = request.POST.get('username', '').strip()
+  if name:
+    try:
+      u = get_object_or_404(User, username=name)
+      role=request.POST['role']
+      CollectionUser.objects.create(user_id=u.id, collection_id=collid, role=role)
+    except Exception as e:
+      print('failed object create', e)
+      # TODO: raise error to screen
+      messages.add_message(
+        request, messages.INFO, "Please check username, we don't have '" + name +"'")
+      return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+  else:
+    print('huh? the POST was:', request.POST)
 
-  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+  request.session['form_submitted'] = True
+  redirect_url = reverse('collection:ds-collection-update', args=[collid])
+  return HttpResponseRedirect(redirect_url)
+
+  # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 """
   collab_delete(uid, dsid)
   remove collaborator from collection
 """
 def collab_delete(request, uid, collid):
-  print('collab_delete() request, uid, dsid', request, uid, collid)
-  get_object_or_404(CollectionUser,user_id=uid, collection_id=collid).delete()
-  messages.add_message(request, messages.SUCCESS, 'form_submitted')
+  print('collab_delete() request.POST', request.POST, uid, collid)
 
-  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+  try:
+    get_object_or_404(CollectionUser, user_id=uid, collection_id=collid).delete()
+  except Exception as e:
+    print('failed object delete', e)
+
+  request.session['form_submitted'] = True
+  redirect_url = reverse('collection:ds-collection-update', args=[collid])
+  return HttpResponseRedirect(redirect_url)
+
+  # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 # sets collection to inactive, removing from lists

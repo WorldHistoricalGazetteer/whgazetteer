@@ -16,7 +16,6 @@
 	<style>
     .form-group {margin-bottom: .5rem !important;}
     .form-group label {margin-bottom:0 !important;}
-		.collab-accordion {background-color: floralwhite;}
 	</style>
 {% endblock %}
 
@@ -37,11 +36,8 @@
 	    {% else %}Create Dataset Collection{% endif %}
 	  </h5>
     <div class="d-flex">
-	    <!-- LEFT SIDE -->
-      <div id="coll_forms" class="col-sm-5 form-box mt-2">
-        <!-- COLLECTION FORM -->
-	      <div>
-	        <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
+      <div id="coll_form" class="col-sm-5 form-box mt-2">
+	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
 	      {% csrf_token %}
 	      <input type="hidden" name="owner" value='{{ user.id }}'></input>
 	      <input type="hidden" name="collection_class" value='dataset'></input>
@@ -71,78 +67,42 @@
 					</label><br/>
 					<span id="img_chooser" class="hidden">{{ form.image_file }}</span>
 				</div>
-	      <div id="buttons" class="clearfix">
-		      <span title="back" class="">
-		        <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save" />
+				<div class="form-group">
+					{% if form.public.value == True %}
+						<label for="Public">Public:</label>
+						{{ form.public }}
+					{% elif action == "update" %}Not yet public, see:
+						<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+					{% endif %}
+				</div>
+	      <hr/>
+	      <tr>
+	      <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
+	      <td>
+	        {% if action == 'update' and user.is_superuser %}
+		        <a class="float-right" href="#">
+			        editor options {% fontawesome_icon 'gear' color='#336699' %}
+		        </a>
+	        {% endif %}
+	      </td>
+	    </tr>
+
+		    <div id="editor_options" class="hidden">
+		      <p>Featured rank: {{ form.featured }}</p>
+		      <p>Image: {{ form.image_file }}</p>
+		    </div>
+	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
+	      <hr/>
+	      <div id="collection_options"></div> <!-- collection_options -->
+	      <p id="referrer"></p>
+	      <div>
+		      <span title="back"class="float-right">
 			      <a href="/mycollections">Cancel</a>
+		        <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save" />
 	        </span>
 	      </div>
-	      <!-- this must remain, it populates the dataset list -->
-	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 		    </form>
-        </div>
-	      <hr/>
-        <!-- COLLABORATION -->
-        <div ID="collab_header" class="py-1 pl-2 collab-accordion">
-	        <a href="#collabContent" data-toggle="collapse" role="button" aria-expanded="false">
-	            Collaborators
-	            <i class="fa fa-chevron-down float-right" aria-hidden="true"></i>
-          </a>
-        </div>
-				{# <div class="collapse collab-accordion" id="collabContent"> #}
-        <!-- conditionally show content -->
-				{% if 'form_submitted' in request.session %}
-				<div class="collapse show" id="collabContent">
-				{% else %}
-		    <div class="collapse" id="collabContent">
-				{% endif %}
-          <div class="">
-		      <form id="sharing_form" method="POST" action="{% url 'collection:coll-collab-add' collid=object.id %}" enctype="multipart/form-data">
-		      {% csrf_token %}
-		      <div class="my-0">
-			        <div class="pl-2 mb-2">
-			          <p class="mb-2">Registered WHG users, assigned per collection.
-				          <sr>Members</sr> can manage content. <sr>Co-owners</sr> can perform all actions.</p>
-			        </div>
-				      {% if user.is_superuser or user in owners or editorial %}
-			          <div class="ml-2 my-2">
-			            <div class="form-check sharing-input pl-0">
-			              <span class="input-group ">
-			                <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
-			                <div class="input-group-append">
-			                  <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
-			                </div>
-			              </span>
-			            </div>
-			            <div class="form-check form-check-inline">
-			              <input class="form-check-input hover" type="radio" name="role" id="r_place" value="member" checked="checked">
-			              <label class="form-check-label" for="r_place">Member</label>
-			            </div>
-			            <div class="form-check form-check-inline">
-			              <input class="form-check-input hover" type="radio" name="role" id="r_trace" value="owner">
-			              <label class="form-check-label" for="r_trace">Co-owner</label>
-			            </div>
-			          </div>
-			        {% endif %}
-			        <ul id="collabs_list">
-			          {% for c in collabs %}
-			            <li>
-			              {{ c|safe }} <!-- username, bold -->
-			              {% if user.is_superuser or user in owners %}
-			                <span class="float-right mr-2">
-			                <a href="{% url 'collection:coll-collab-delete' uid=c.user_id collid=object.id%}">
-			                {% fontawesome_icon 'times-circle' color='#336699'%}</a></span>
-			              {% endif %}
-			            </li>
-			          {% endfor %}
-			        </ul>
-	        </div>
-		      </form>
-          </div>
-        </div>
-      </div> <!-- coll_forms -->
-
-      <!-- RIGHT SIDE -->
+      </div> <!-- #coll_form -->
       <div id="coll_builder" class="col-sm-7 p-2">
           <h5>Datasets</h5>
           <p>
@@ -177,8 +137,7 @@
               </div>
             {% endfor %}
           </div> <!-- #coll_dscards_create -->
-      </div>
-
+      </div> <!-- #coll_builder -->
     </div> <!-- d-flex -->
   <div class="selector py-3"><div id="helpme"></div></div>
   {% endif %}
@@ -186,14 +145,6 @@
 
 <script type="text/javascript">
   $(function(){
-
-    $('#collabContent').on('show.bs.collapse', function () {
-        $('.fa-chevron-down').removeClass('fa-chevron-down').addClass('fa-chevron-up');
-    });
-    $('#collabContent').on('hide.bs.collapse', function () {
-        $('.fa-chevron-up').removeClass('fa-chevron-up').addClass('fa-chevron-down');
-    });
-
     dslist=[] // holds ids of selected datasets
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
@@ -234,7 +185,7 @@
     {#if('{{action}}' == 'create' && dslist.length < 2) {#}
     {#  e.preventDefault()#}
     {#  $("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()#}
-    {# }#}
+    {#}#}
   })
 
   function listDataset(d) {
