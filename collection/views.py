@@ -31,7 +31,8 @@ def collab_add(request, collid):
       request, messages.INFO, "Please check username, we don't have '" + request.POST['username']+"'")
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
   print('collab_add():',request.POST['username'],role, collid, uid)
-  CollectionUser.objects.create(user_id_id=uid, dataset_id_id=collid, role=role)
+  CollectionUser.objects.create(user_id=uid, collection_id=collid, role=role)
+  messages.add_message(request, messages.SUCCESS, 'form_submitted')
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -39,9 +40,10 @@ def collab_add(request, collid):
   collab_delete(uid, dsid)
   remove collaborator from collection
 """
-def collab_delete(request, uid, collid, v):
+def collab_delete(request, uid, collid):
   print('collab_delete() request, uid, dsid', request, uid, collid)
-  get_object_or_404(CollectionUser,user_id_id=uid, dataset_id_id=collid).delete()
+  get_object_or_404(CollectionUser,user_id=uid, collection_id=collid).delete()
+  messages.add_message(request, messages.SUCCESS, 'form_submitted')
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 

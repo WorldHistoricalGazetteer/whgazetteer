@@ -243,6 +243,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
+# MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/

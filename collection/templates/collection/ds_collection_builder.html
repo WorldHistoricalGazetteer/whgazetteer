@@ -16,6 +16,7 @@
 	<style>
     .form-group {margin-bottom: .5rem !important;}
     .form-group label {margin-bottom:0 !important;}
+    .collab-accordion {background-color: floralwhite;}
 	</style>
 {% endblock %}
 
@@ -37,8 +38,8 @@
 	  </h5>
     <div class="d-flex">
       <div id="coll_form" class="col-sm-5 form-box mt-2">
-	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
-	      {% csrf_token %}
+      < id="collection_form" method="POST" action="#" enctype="multipart/form-data">
+      {% csrf_token %}
 	      <input type="hidden" name="owner" value='{{ user.id }}'></input>
 	      <input type="hidden" name="collection_class" value='dataset'></input>
 				<div class="form-group">
@@ -68,29 +69,91 @@
 					<span id="img_chooser" class="hidden">{{ form.image_file }}</span>
 				</div>
 				<div class="form-group">
-					{% if form.public.value == True %}
-						<label for="Public">Public:</label>
-						{{ form.public }}
-					{% elif action == "update" %}Not yet public, see:
-						<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
-					{% endif %}
+				{% comment %}
+				{% if form.public.value == True %}
+					<label for="Public">Public:</label>
+					{{ form.public }}
+				{% elif action == "update" %}Not yet public, see:
+					<a href="#"><span class="help-matches" data-id="going_public_coll">
+						making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}
+					</span></a>
+				{% endif %}
+				{% endcomment %}
+	      <p class="my-1">&#x02733;<i><b> required</b></i></p>
 				</div>
 	      <hr/>
-	      <tr>
-	      <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
-	      <td>
-	        {% if action == 'update' and user.is_superuser %}
-		        <a class="float-right" href="#">
-			        editor options {% fontawesome_icon 'gear' color='#336699' %}
-		        </a>
-	        {% endif %}
-	      </td>
-	    </tr>
+{% comment %}
+{% if messages %}
+    {% for message in messages %}
+        {% if message == 'form_submitted' %}
+            <div class="collapse show" id="collapseContent"> <!-- Add 'show' class to open the accordion -->
+        {% else %}
+            <div class="collapse" id="collapseContent">
+        {% endif %}
+    {% endfor %}
+{% else %}
+    <div class="collapse" id="collapseContent">
+{% endif %}
+    <!-- Rest of your accordion content -->
+{% endcomment %}
+</div>
 
-		    <div id="editor_options" class="hidden">
-		      <p>Featured rank: {{ form.featured }}</p>
-		      <p>Image: {{ form.image_file }}</p>
-		    </div>
+
+        <!-- Accordion Header -->
+        <div class="py-1 pl-2 collab-accordion">
+	        <a href="#collabContent" data-toggle="collapse" role="button" aria-expanded="false">
+	            Collaborators
+	            <i class="fa fa-chevron-down float-right" aria-hidden="true"></i>
+          </a>
+        </div>
+        <!-- Accordion Content -->
+
+        <div class="collapse collab-accordion" id="collabContent">
+          <div class="">
+			      <form id="sharing_form" method="POST"
+			            action="{% url 'collection:coll-collab-add' collid=object.id %}" enctype="multipart/form-data">
+			      {% csrf_token %}
+			      <div class="my-0">
+				        <div class="pl-2 mb-2">
+				          <p class="mb-2">Registered WHG users, assigned per collection.
+					          <sr>Members</sr> can manage content. <sr>Co-owners</sr> can perform all actions.</p>
+				        </div>
+					      {% if user.is_superuser or user in owners or editorial %}
+				          <div class="ml-2 my-2">
+				            <div class="form-check sharing-input pl-0">
+				              <span class="input-group ">
+				                <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
+				                <div class="input-group-append">
+				                  <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
+				                </div>
+				              </span>
+				            </div>
+				            <div class="form-check form-check-inline">
+				              <input class="form-check-input hover" type="radio" name="role" id="r_place" value="member" checked="checked">
+				              <label class="form-check-label" for="r_place">Member</label>
+				            </div>
+				            <div class="form-check form-check-inline">
+				              <input class="form-check-input hover" type="radio" name="role" id="r_trace" value="owner">
+				              <label class="form-check-label" for="r_trace">Co-owner</label>
+				            </div>
+				          </div>
+				        {% endif %}
+				        <ul id="collabs_list">
+				          {% for c in collabs %}
+				            <li>
+				              {{ c|safe }} <!-- username, bold -->
+				              {% if user.is_superuser or user in owners %}
+				                <span class="float-right mr-2">
+				                <a href="{% url 'collection:coll-collab-delete' uid=c.user_id collid=object.id%}">
+				                {% fontawesome_icon 'times-circle' color='#336699'%}</a></span>
+				              {% endif %}
+				            </li>
+				          {% endfor %}
+				        </ul>
+			        </div>
+			      </form>
+          </div>
+        </div>
 	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 	      <hr/>
 	      <div id="collection_options"></div> <!-- collection_options -->
@@ -101,60 +164,7 @@
 		        <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save" />
 	        </span>
 	      </div>
-		    </form>
-
-			{% for c in collabs %}
-          {{ c|safe }} / {{ c.user_id }}
-      {% endfor %}
-        <!-- BEGIN collection_user -->
-		    <div id="collab" class="">
-		      <form id="sharing_form" method="POST"
-		            action="{% url 'collection:coll-collab-add' collid=object.id %}" enctype="multipart/form-data">
-		      {% csrf_token %}
-		      <div class="sharing-box my-3 w-50">
-		        <div class="sharing-header mb-0 pl-2 strong">Collaborators</div>
-		        <div class="smallish pl-2 mb-2">
-		          <p class="mb-2">Collaborators are registered WHG users, assigned per collection.</p>
-		          <p><sr>Members</sr> can do various stuff, TBD.
-			          <sr>Co-owners</sr> can perform all actions.</p>
-		        </div>
-			      {% if user.is_superuser or user in owners or editorial %}
-		          <div class="ml-2 my-2">
-		            <div class="form-check form-check-inline sharing-input">
-		              <span class="input-group">
-		                <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
-		                <div class="input-group-append">
-		                  <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
-		                </div>
-		              </span>
-		            </div>
-		            <div class="form-check form-check-inline">
-		              <input class="form-check-input hover" type="radio" name="role" id="r_place" value="member" checked="checked">
-		              <label class="form-check-label" for="r_place">Member</label>
-		            </div>
-		            <div class="form-check form-check-inline">
-		              <input class="form-check-input hover" type="radio" name="role" id="r_trace" value="owner">
-		              <label class="form-check-label" for="r_trace">Co-owner</label>
-		            </div>
-		          </div>
-		        {% endif %}
-		        <ul id="collabs_list">
-		          {% for c in collabs %}
-		            <li>
-		              {{ c|safe }} <!-- username, bold -->
-		              {% if user.is_superuser or user in owners %}
-		                <span class="float-right mr-2">
-		                <a href="{% url 'collection:coll-collab-delete' uid=c.user_id collid=object.id %}">
-		                {% fontawesome_icon 'times-circle' color='#336699'%}</a></span>
-		              {% endif %}
-		            </li>
-		          {% endfor %}
-		        </ul>
-		      </div>
-		      </form>
-		    </div> <!-- #collab -->
-        <!-- END collection_user -->
-
+      </form>
       </div> <!-- #coll_form -->
       <div id="coll_builder" class="col-sm-7 p-2">
           <h5>Datasets</h5>
@@ -198,6 +208,13 @@
 
 <script type="text/javascript">
   $(function(){
+    $('#collabContent').on('show.bs.collapse', function () {
+        $('.fa-chevron-down').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+    });
+    $('#collabContent').on('hide.bs.collapse', function () {
+        $('.fa-chevron-up').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+    });
+
     dslist=[] // holds ids of selected datasets
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
