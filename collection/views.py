@@ -55,6 +55,7 @@ def collab_delete(request, uid, collid):
   except Exception as e:
     print('failed object delete', e)
 
+
   request.session['form_submitted'] = True
   redirect_url = reverse('collection:ds-collection-update', args=[collid])
   return HttpResponseRedirect(redirect_url)
@@ -517,6 +518,7 @@ class DatasetCollectionCreateView(LoginRequiredMixin, CreateView):
     uses ds_collection_builder.html
 """
 class DatasetCollectionUpdateView(UpdateView):
+
   form_class = CollectionModelForm
   template_name = 'collection/ds_collection_builder.html'
   success_url = '/mycollections'
@@ -551,6 +553,8 @@ class DatasetCollectionUpdateView(UpdateView):
     _id = self.kwargs.get("id")
     print('DatasetCollectionUpdateView() kwargs', self.kwargs)
 
+    form_submitted_flag = self.request.session.pop('form_submitted', False)
+
     datasets = self.object.datasets.all()
 
     # populates dropdown
@@ -566,6 +570,9 @@ class DatasetCollectionUpdateView(UpdateView):
     context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
+
+    # manages display of collaborator list
+    context['form_submitted_flag'] = form_submitted_flag
 
     return context
 

@@ -89,13 +89,19 @@
 	            <i class="fa fa-chevron-down float-right" aria-hidden="true"></i>
           </a>
         </div>
-				{# <div class="collapse collab-accordion" id="collabContent"> #}
         <!-- conditionally show content -->
+				{% if form_submitted_flag %}
+				    <div class="collapse show" id="collabContent">
+				{% else %}
+				    <div class="collapse" id="collabContent">
+				{% endif %}
+	      {% comment %}
 				{% if 'form_submitted' in request.session %}
 				<div class="collapse show" id="collabContent">
 				{% else %}
 		    <div class="collapse" id="collabContent">
 				{% endif %}
+				{% endcomment %}
           <div class="">
 		      <form id="sharing_form" method="POST" action="{% url 'collection:coll-collab-add' collid=object.id %}" enctype="multipart/form-data">
 		      {% csrf_token %}
