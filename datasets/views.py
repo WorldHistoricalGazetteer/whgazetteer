@@ -2245,29 +2245,22 @@ class DataListsView(LoginRequiredMixin, ListView):
       dslist = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
       return dslist
     elif self.request.path == reverse('data-collections'):
-      accessible_collections = Collection.objects.filter(
+      list = Collection.objects.filter(
         Q(owner=me) |
         Q(collabs__user=me) |
         Q(collabs__user__groups__name='whg_team') |
         Q(collabs__user__groups__name='whg_admins')
-      )
-      return accessible_collections
-      # idlist = [obj.id for obj in Collection.objects.all() if me in obj.owners or
-      #              me in obj.collaborators]
-      # list = Collection.objects.filter(id__in=idlist).order_by("-id")
-      # return list
+      ).distinct()
+      return list
     elif self.request.path == reverse('data-areas'):
-      # print('areas...whgteam?', whgteam)
       study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
       list = Area.objects.all().filter(type__in=study_areas).order_by('-id') if whgteam else \
         Area.objects.all().filter(type__in=study_areas, owner=me).order_by('-created')
-      # print('list:', list)
       return list
     else:
       print('resources...whgteam?', whgteam)
       list = Resource.objects.all().order_by('create_date') if whgteam or teaching \
         else Resource.objects.all().filter(owner=me).order_by('create_date')
-      # print('list:', list)
       return list
 
   def get_context_data(self, *args, **kwargs):

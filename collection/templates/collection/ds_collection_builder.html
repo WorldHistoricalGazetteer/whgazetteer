@@ -22,7 +22,6 @@
 
 {% block content %}
 <div class="container">
-	<p>in collabs? {% if user in object.collaborators %}yup{% else %}nope, {{ user.username }}{% endif %}</p>
   {% if action == 'update' and not user in owners and not user in object.collaborators %}
 	  <p>Access to this page is limited to the collection team; Owner is
 		  <mark>{{object.owner.username}}</mark></p>
@@ -91,29 +90,24 @@
 	            <i class="fa fa-chevron-down float-right" aria-hidden="true"></i>
           </a>
         </div>
-        <!-- conditionally show content -->
+        <!-- conditionally show content if just added -->
 				{% if form_submitted_flag %}
 				    <div class="collapse show" id="collabContent">
 				{% else %}
 				    <div class="collapse" id="collabContent">
 				{% endif %}
-	      {% comment %}
-				{% if 'form_submitted' in request.session %}
-				<div class="collapse show" id="collabContent">
-				{% else %}
-		    <div class="collapse" id="collabContent">
-				{% endif %}
-				{% endcomment %}
           <div class="">
-		      <form id="sharing_form" method="POST" action="{% url 'collection:coll-collab-add' collid=object.id %}" enctype="multipart/form-data">
+		      <form id="sharing_form" method="POST"
+		            action="{% url 'collection:coll-collab-add' collid=object.id %}" enctype="multipart/form-data">
 		      {% csrf_token %}
 		      <div class="my-0">
 			        <div class="pl-2 mb-2">
 			          <p class="mb-2">Registered WHG users, assigned per collection.
-				          <sr>Members</sr> can manage content. <sr>Co-owners</sr> can perform all actions.</p>
+				          <sr>Members</sr> can manage content. <sr>Co-owners</sr> can perform all actions
+				           (<sr>CAREFUL!</sr>)</p>
 			        </div>
-				      {% if user.is_superuser or user in owners or editorial %}
-			          <div class="ml-2 my-2">
+							{% if user|can_add_collaborator:object %}
+								<div class="ml-2 my-2">
 			            <div class="form-check sharing-input pl-0">
 			              <span class="input-group ">
 			                <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">

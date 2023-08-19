@@ -11,5 +11,7 @@ def can_delete_collection(user, collection):
            user.groups.filter(name='whg_admins').exists()
 
 def can_add_collaborator(user, collection):
-    return user == collection.owner or \
-           user.groups.filter(name='whg_admins').exists()
+  result = user == collection.owner or \
+         user.groups.filter(name='whg_admins').exists()
+  print(f"Checking can_add_collaborator for user {user} and collection {collection}: Result is {result}")
+  return result

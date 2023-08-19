@@ -27,13 +27,14 @@
 
 {% block content %}
 <div class="container mt-1">
-	{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
-	<div>
-		<span class="float-right mr-2 pt-2">
-			<a href="{% url 'collection:ds-collection-update' object.id %}" >
-				{% fontawesome_icon 'gear' color='#336699' %}</a>
-		</span>
-	</div>
+{#	{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}#}
+	{% if user|can_edit_collection:object %}
+		<div>
+			<span class="float-right mr-2 pt-2">
+				<a href="{% url 'collection:ds-collection-update' object.id %}" >
+					{% fontawesome_icon 'gear' color='#336699' %}</a>
+			</span>
+		</div>
 	{% endif %}
   {% csrf_token %} <!-- for download function -->
   <ul id="collection_tabs" class="nav nav-tabs" role="tablist">

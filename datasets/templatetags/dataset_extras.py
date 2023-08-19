@@ -2,8 +2,17 @@ from django import template
 from django.contrib.auth.models import Group
 from django.template.defaultfilters import stringfilter
 import json, re, validators, textwrap
+from collection.permissions import *
 
 register = template.Library()
+
+@register.filter(name='can_edit_collection')
+def can_edit_collection_filter(user, collection):
+    return can_edit_collection(user, collection)
+
+@register.filter(name='can_add_collaborator')
+def can_add_collaborator_filter(user, collection):
+    return can_add_collaborator(user, collection)
 
 # test user in group
 @register.filter
