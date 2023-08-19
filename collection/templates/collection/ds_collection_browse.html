@@ -28,7 +28,7 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-	{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
+	{% if user.id == object.owner.id or user in whgteam or user in owners   %}
 	<div>
 		<span class="float-right mr-2 pt-2">
 			<a href="{% url 'collection:ds-collection-update' object.id %}" >

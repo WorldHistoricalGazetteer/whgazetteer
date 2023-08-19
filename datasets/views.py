@@ -2245,13 +2245,17 @@ class DataListsView(LoginRequiredMixin, ListView):
       dslist = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
       return dslist
     elif self.request.path == reverse('data-collections'):
-      idlist = [obj.id for obj in Collection.objects.all() if me in obj.owners or
-                   me in obj.collaborators]
-      list = Collection.objects.filter(id__in=idlist).order_by("-id")
-      return list
-      # mine = Collection.objects.filter(owner=me)
-      # collab = CollectionUser.objects.filter(user=me).values_list('collection')
-
+      accessible_collections = Collection.objects.filter(
+        Q(owner=me) |
+        Q(collabs__user=me) |
+        Q(collabs__user__groups__name='whg_team') |
+        Q(collabs__user__groups__name='whg_admins')
+      )
+      return accessible_collections
+      # idlist = [obj.id for obj in Collection.objects.all() if me in obj.owners or
+      #              me in obj.collaborators]
+      # list = Collection.objects.filter(id__in=idlist).order_by("-id")
+      # return list
     elif self.request.path == reverse('data-areas'):
       # print('areas...whgteam?', whgteam)
       study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas

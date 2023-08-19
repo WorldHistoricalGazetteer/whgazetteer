@@ -22,8 +22,10 @@
 
 {% block content %}
 <div class="container">
-  {% if action == 'update' and user.id != object.owner.id and not user.is_superuser and not user in whgteam %}
-	  <p>Access to this page is limited to the collection owner(s); Owner is <mark>{{object.owner.username}}</mark></p>
+	<p>in collabs? {% if user in object.collaborators %}yup{% else %}nope, {{ user.username }}{% endif %}</p>
+  {% if action == 'update' and not user in owners and not user in object.collaborators %}
+	  <p>Access to this page is limited to the collection team; Owner is
+		  <mark>{{object.owner.username}}</mark></p>
   {% else %}
     <h5 class="mt-3">
 	    {% if action == 'update' %}Collection Builder:
