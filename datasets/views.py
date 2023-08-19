@@ -2250,7 +2250,7 @@ class DataListsView(LoginRequiredMixin, ListView):
         Q(collabs__user=me) |
         Q(collabs__user__groups__name='whg_team') |
         Q(collabs__user__groups__name='whg_admins')
-      ).distinct()
+      ).distinct().order_by('-created')
       return list
     elif self.request.path == reverse('data-areas'):
       study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
