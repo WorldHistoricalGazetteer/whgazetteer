@@ -698,45 +698,45 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 
 
   # ORIGINAL base query
-  # qbase = {"query": {
-  #   "bool": {
-  #     "must": [
-  #       {"terms": {"variants.names":variants}}
-  #     ],
-  #     # boosts score if matched
-  #     "should":[
-  #       {"terms": {"authids": qobj['authids']}}
-  #     ],
-  #     "filter": []
-  #   }
-  # }}
+  qbase = {"query": {
+    "bool": {
+      "must": [
+        {"terms": {"variants.names":variants}}
+      ],
+      # boosts score if matched
+      "should":[
+        {"terms": {"authids": qobj['authids']}}
+      ],
+      "filter": []
+    }
+  }}
 
   # BEGIN ALTERNATE qbase, 19 Aug 2023
-  qbase = {
-    "query": {
-      "bool": {
-        "must": [],
-        "should": [
-          {
-            "terms": {
-              "variants.names": variants,  "boost": 3
-            }
-          },
-          {
-            "terms": {
-              "variants.names.text": variants
-            }
-          },
-          {
-            "terms": {
-              "variants.names.edge_ngram": variants
-            }
-          }
-        ],
-        "filter": []
-      }
-    }
-  }
+  # qbase = {
+  #   "query": {
+  #     "bool": {
+  #       "must": [],
+  #       "should": [
+  #         {
+  #           "terms": {
+  #             "variants.names": variants,  "boost": 3
+  #           }
+  #         },
+  #         {
+  #           "terms": {
+  #             "variants.names.text": variants
+  #           }
+  #         },
+  #         {
+  #           "terms": {
+  #             "variants.names.edge_ngram": variants
+  #           }
+  #         }
+  #       ],
+  #       "filter": []
+  #     }
+  #   }
+  # }
 
   # somthing to try?
   # # Add a match query for each variant to the nested bool query
