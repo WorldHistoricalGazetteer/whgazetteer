@@ -24,7 +24,6 @@ class HitRecord(object):
     import json
     return json.loads(json.dumps(self.__dict__,indent=2))
 
-
 def parse_wkt(g):
   #print('wkt',g)
   from shapely.geometry import mapping
@@ -32,7 +31,6 @@ def parse_wkt(g):
   feature = json.loads(json.dumps(mapping(gw)))
   #print('wkt, feature',g, feature)
   return feature
-
 
 #*# test loads
 #from django.shortcuts import get_object_or_404

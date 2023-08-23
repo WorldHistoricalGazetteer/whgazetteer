@@ -1301,7 +1301,7 @@
   // from sugLister()
   // TODO: doesn't reach into when.timespans; Indias data malformed
   function parseWhen(when){
-  console.log('parseWhen()',when)
+    {#console.log('parseWhen()',when)#}
     html=''
     for (w in when){
       s = 'start' in when[w]?'start: '+when[w]['start']:'earliest: '+when[w]['earliest']

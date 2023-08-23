@@ -359,19 +359,36 @@ def ccDecode(codes):
   for c in codes:
     countries.append(cchash[0][c]['gnlabel'])
   return countries
-  
+
+
 # generate a language-dependent {name} ({en}) from wikidata variants
-def wdTitle(variants, lang):
+def wdTitle(variants, userTitle):
   if len(variants) == 0:
     return 'unnamed'
   else:
-    vl_en=next( (v for v in variants if v['lang'] == 'en'), None)#; print(vl_en)
-    vl_pref=next( (v for v in variants if v['lang'] == lang), None)#; print(vl_pref)
-    vl_first=next( (v for v in variants ), None); print(vl_first)
-  
-    title = vl_pref['names'][0] + (' (' + vl_en['names'][0] + ')' if vl_en else '') \
-      if vl_pref and lang != 'en' else vl_en['names'][0] if vl_en else vl_first['names'][0]
-    return title
+    # Prioritize exact match from user query
+    exact_match = next((v for v in variants if userTitle.lower() in (name.lower() for name in v['names'])), None)
+    if exact_match:
+      return exact_match['names'][0]
+
+    # If no exact match, fallback to your existing logic
+    vl_en = next((v for v in variants if v['lang'] == 'en'), None)
+    vl_first = next((v for v in variants), None)
+
+    return vl_en['names'][0] if vl_en else vl_first['names'][0]
+
+
+# def wdTitle(variants, lang):
+#   if len(variants) == 0:
+#     return 'unnamed'
+#   else:
+#     vl_en=next( (v for v in variants if v['lang'] == 'en'), None)#; print(vl_en)
+#     vl_pref=next( (v for v in variants if v['lang'] == lang), None)#; print(vl_pref)
+#     vl_first=next( (v for v in variants ), None); print(vl_first)
+#
+#     title = vl_pref['names'][0] + (' (' + vl_en['names'][0] + ')' if vl_en else '') \
+#       if vl_pref and lang != 'en' else vl_en['names'][0] if vl_en else vl_first['names'][0]
+#     return title
 
 def wdDescriptions(descrips, lang):
   dpref=next( (v for v in descrips if v['lang'] == lang), None)
@@ -411,7 +428,7 @@ def normalize_whg(hits):
     
 # normalize hit json from any authority
 # language relevant only for wikidata local)
-def normalize(h, auth, language=None):
+def normalize(h, auth, userTitle, language=None):
   if auth.startswith('whg'):
     # for whg h is full hit, not only _source
     hit = deepcopy(h)
@@ -441,8 +458,13 @@ def normalize(h, auth, language=None):
     # TODO: rewrite ccDecode to handle all conditions coming from index
     # ccodes might be [] or [''] or ['ZZ', ...]
     rec.countries = ccDecode(h['ccodes']) if ('ccodes' in h.keys() and (len(h['ccodes']) > 0 and h['ccodes'][0] !='')) else []
-    rec.parents = ['partOf: '+r.label+' ('+parseWhen(r['when']['timespans'])+')' for r in h['relations']] \
-                if 'relations' in h.keys() and len(h['relations']) > 0 else []
+
+    # TODO: support various relations better; this generated a value used in review
+    if 'relations' in h and h['relations']:
+      rec.parents = ['partOf: ' + r.label for r in h['relations']]
+    else:
+      rec.parents = []
+
     rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
     
     rec.geoms = [{
@@ -489,17 +511,17 @@ def normalize(h, auth, language=None):
     # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims',
     # 'sitelinks', 'variants', 'minmax', 'types', 'location']
     try:
-      # print('h in normalize',h)
       # TODO: do it in index?
       variants=h['variants']
-      title = wdTitle(variants, language)
+
+      # get best choice for title/preferred display
+      title = wdTitle(variants, userTitle)
 
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['id'], title)
-      #print('"rec" HitRecord',rec)
-      
+
       # list of variant@lang (excldes chosen title)
-      #variants= [{'lang': 'ru', 'names': ['Toamasina', 'Туамасина']},{'lang': 'ja', 'names': ['タマタヴ', 'トゥアマシナ']}]
+      # variants= [{'lang': 'ru', 'names': ['Toamasina', 'Туамасина']},{'lang': 'ja', 'names': ['タマタヴ', 'トゥアマシナ']}]
       v_array=[]
       for v in variants:
         for n in v['names']:
@@ -517,27 +539,6 @@ def normalize(h, auth, language=None):
 
       rec.links = h['authids']
 
-      # dont' know what happened here; h has key 'authids'
-
-      # turn these identifier claims into links
-      # qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'}
-      # links=[]
-      # hlinks = list(
-      #   set(h['claims'].keys()) & set(qlinks.keys()))
-      # if len(hlinks) > 0:
-      #   for l in hlinks:
-      #     links.append(qlinks[l]+':'+str(h['claims'][l][0]))
-      # non-English wp pages do not resolve well, ignore them
-      # add en and FIRST {language} wikipedia sitelink OR first sitelink
-      # wplinks = []
-      # wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == 'en']
-      # if language != 'en':
-      #   wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == language]
-      # links += ['wp:'+l for l in set(wplinks)]
-      #
-      # rec.links = links
-      #print('rec.links',rec.links)
-
       # look up Q class labels
       htypes = set(h['claims']['P31'])
       qtypekeys = set([t[0] for t in qtypes.items()])
@@ -550,14 +551,15 @@ def normalize(h, auth, language=None):
       ]
       
       # include en + native lang if not en
-      #print('h["descriptions"]',h['descriptions'])
-      rec.descriptions = wdDescriptions(h['descriptions'], language) if 'descriptions' in h.keys() else []
+      rec.descriptions = wdDescriptions(h['descriptions'], language) \
+        if 'descriptions' in h.keys() else []
       
       # not applicable
       rec.parents = []
       
       # no minmax in hit if no inception value(s)
-      rec.minmax = [h['minmax']['gte'],h['minmax']['lte']] if 'minmax' in h else []
+      rec.minmax = [h['minmax']['gte'],h['minmax']['lte']] \
+        if 'minmax' in h else []
     except:
       # TODO: log error
       print("normalize(wdlocal) error:", h['id'], sys.exc_info())
@@ -583,7 +585,7 @@ def normalize(h, auth, language=None):
     rec.minmax = []
     rec.links = []
     #print(rec)
-  #print('normalized hit record',rec.toJSON())
+
   # TODO: raise any errors
   return rec.toJSON()
 
@@ -646,7 +648,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   # if no aatids, returns ['Q486972'] (human settlement)
   qtypes = [t[3:] for t in getQ(qobj['placetypes'],'types')]
 
-  # prep spatial 
+  # PREP SPATIAL
   
   # if no ccodes, returns []
   countries = [t[3:] for t in getQ(qobj['countries'],'ccodes')]
@@ -696,34 +698,47 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 
 
   # ORIGINAL base query
-  qbase = {"query": {
-    "bool": {
-      "must": [
-        {"terms": {"variants.names":variants}}
-      ],
-      # boosts score if matched
-      "should":[
-        {"terms": {"authids": qobj['authids']}}
-      ],
-      "filter": []
-    }
-  }}
-
-  # BEGIN ALTERNATE qbase, 04 Aug 2023
-  # Initialize qbase
   # qbase = {"query": {
   #   "bool": {
   #     "must": [
-  #       {"bool": {
-  #         "should": [],
-  #         "minimum_should_match": 1
-  #       }}
+  #       {"terms": {"variants.names":variants}}
   #     ],
-  #     "filter": [],
-  #     "should": []
+  #     # boosts score if matched
+  #     "should":[
+  #       {"terms": {"authids": qobj['authids']}}
+  #     ],
+  #     "filter": []
   #   }
   # }}
-  #
+
+  # BEGIN ALTERNATE qbase, 19 Aug 2023
+  qbase = {
+    "query": {
+      "bool": {
+        "must": [],
+        "should": [
+          {
+            "terms": {
+              "variants.names": variants,  "boost": 3
+            }
+          },
+          {
+            "terms": {
+              "variants.names.text": variants
+            }
+          },
+          {
+            "terms": {
+              "variants.names.edge_ngram": variants
+            }
+          }
+        ],
+        "filter": []
+      }
+    }
+  }
+
+  # somthing to try?
   # # Add a match query for each variant to the nested bool query
   # for variant in variants:
   #   qbase["query"]["bool"]["must"][0]["bool"]["should"].append(
@@ -732,17 +747,13 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   #   )
   # END ALTERNATE, 04 Aug 2023
 
-  # add spatial filter as available in qobj
+  # ADD SPATIAL
   if has_geom:
     # shape_filter is polygon hull ~100km diameter
     qbase['query']['bool']['filter'].append(shape_filter)
-    if has_countries:
-      qbase['query']['bool']['should'].append(countries_match)
   elif has_bounds:
     # area_filter (predefined region or study area)
     qbase['query']['bool']['filter'].append(area_filter)
-    if has_countries:
-      qbase['query']['bool']['should'].append(countries_match)
   elif has_countries:
     # matches ccodes
     qbase['query']['bool']['must'].append(countries_match)
@@ -961,7 +972,7 @@ def align_wdlocal(pk, **kwargs):
           task_id = task_id,
           query_pass = hit['pass'],
           # prepare for consistent display in review screen
-          json = normalize(hit['_source'], 'wdlocal', language),
+          json = normalize(hit['_source'], 'wdlocal', place.title, language),
           src_id = qobj['src_id'],
           score = hit['_score'],
           #geom = loc,
