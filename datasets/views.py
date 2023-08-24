@@ -1912,7 +1912,6 @@ def ds_insert_tsv(request, pk):
   csv.field_size_limit(300000)
   ds = get_object_or_404(Dataset, id=pk)
   user = request.user
-  print('ds_insert_tsv()',ds)
   # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
   print('ds_insert_tsv(): ds, file', ds, dsf)
@@ -1933,7 +1932,7 @@ def ds_insert_tsv(request, pk):
 
       # strip BOM character if exists
       header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
-      print('header', header)
+      # print('header', header)
 
       objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
               "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
@@ -2009,7 +2008,7 @@ def ds_insert_tsv(request, pk):
         # print('row r' , r)
         # print('start:'+start,'; end:'+end, ';year'+source_year)
         dates = (start,end,source_year)
-        print('dates tuple', dates)
+        # print('dates tuple', dates)
         # must be start and/or source_year
         datesobj = parsedates_tsv(dates)
         # returns, e.g. {'timespans': [{'start': {'earliest': 1015}, 'end': None}],
@@ -2018,8 +2017,8 @@ def ds_insert_tsv(request, pk):
         description = r[header.index('description')] \
           if 'description' in header else ''
 
-        print('title, src_id (pre-newpl):', title, src_id)
-        print('datesobj', datesobj)
+        # print('title, src_id (pre-newpl):', title, src_id)
+        # print('datesobj', datesobj)
         # create new Place object
         newpl = Place(
           src_id = src_id,

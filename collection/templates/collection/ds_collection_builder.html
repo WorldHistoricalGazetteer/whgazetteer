@@ -84,6 +84,7 @@
         </div>
 	      <hr/>
         <!-- COLLABORATION -->
+        {% if object.pk %}
         <div ID="collab_header" class="py-1 pl-2 collab-accordion">
 	        <a href="#collabContent" data-toggle="collapse" role="button" aria-expanded="false">
 	            Collaborators
@@ -143,7 +144,7 @@
           </div>
         </div>
       </div> <!-- coll_forms -->
-
+			{% endif %}
       <!-- RIGHT SIDE -->
       <div id="coll_builder" class="col-sm-7 p-2">
           <h5>Datasets</h5>
