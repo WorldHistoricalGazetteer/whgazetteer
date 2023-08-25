@@ -109,11 +109,12 @@ def contactView(request):
             username = form.cleaned_data['username'] # hidden input
             subject = form.cleaned_data['subject']
             from_email = form.cleaned_data['from_email']
+            sender_email = 'noreply@kgeographer.org'
             message = name +' ('+username+'; '+from_email+'), on the subject of '+subject+' says: \n\n'+form.cleaned_data['message']
             subject_reply = "WHG message received"
             message_reply = '\nWe received your message concerning "'+subject+'" and will respond soon.\n\n regards,\nThe WHG project team'
             try:
-                send_mail(subject, message, from_email, ["karl@kgeographer.org"])
+                send_mail(subject, message, sender_email, ["karl@kgeographer.org"])
                 send_mail(subject_reply, message_reply, 'karl@kgeographer.org', [from_email])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
