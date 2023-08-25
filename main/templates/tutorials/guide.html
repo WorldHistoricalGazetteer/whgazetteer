@@ -1,5 +1,5 @@
 {% extends "main/base.html" %}
-{% block title %}<title>WHG::v2 Guide</title>{% endblock %}
+{% block title %}<title>WHG::v2.1 Guide</title>{% endblock %}
 
 {% block content %}
 {% load static %}
@@ -10,7 +10,9 @@
       <h3>World Historical Gazetteer Version 2.0: A Guide</h3>
     </div>
     <div id="guide_content" class="mx-5">
-      <p class="lead">Welcome to Version 2 of the World Historical Gazetteer (WHG) platform, featuring several significant changes from Version 1. WHG remains a work-in-progress, so expect further refinements, new features and new data on an ongoing basis. Notes about planned near-future updates appear <mark>highlighted like this</mark>.</p>
+      <p class="lead">Welcome to Version 2.1 of the World Historical Gazetteer (WHG) platform.
+	      WHG remains a work-in-progress; expect further refinements, new features and new data in Version 3 (beta, early 2024).
+	      Notes about planned near-future updates appear <mark>highlighted like this</mark>.</p>
       <div id="guide_tabs">
         <ul class="nav nav-tabs" role="tablist">
           <li class="nav-item">
@@ -23,7 +25,7 @@
             <a class="nav-link" id="guide-faq-tab" data-toggle="tab" href="#guide_faq" role="tab" aria-controls="" aria-selected="false">FAQ</a>
           </li>
         </ul>
-      </div>
+      </div> <!-- guide_tabs -->
       <div id="guide_tab_content" class="tab-content">
         <div id="guide_overview" class="guide tab-pane fade show active" role="tabpanel">
           <ul class="nav nav-pills nav-fill mt-3 mb-1" role="tablist">
@@ -40,99 +42,145 @@
               <a class="nav-link" id="pills-comm-tab" data-toggle="pill" href="#pills-comm" role="tab" aria-controls="pills-comm" aria-selected="false">Community</a>
             </li>
           </ul>
-          <div class="tab-content mt-2" id="pills-tabContent">
+          <div id="pills-tabContent" class="tab-content mt-2" >
             <div id="pills-why" class="tab-pane fade show active" role="tabpanel" aria-labelledby="pills-why-tab">
               <div class="p-1">
                 <p class="subhead">Geography in Historical Research</p>
-                <p>Many scholars and students of the human past ask explicitly geospatial questions in their research, for example about distribution patterns over time and connectivity. Others simply want to make maps&mdash;to visualize the geography inherent in their source material. Either case requires making lists of historical place names and determining the coordinates of those places, rendering them mappable and amenable to spatial analysis. Finding even estimated locations for historical places is often a difficult and time-consuming task. A central goal of the World Historical Gazetteer project is to make it as easy as possible.  WHG is a platform for gathering in one system, over time, contributions of place name data&mdash;large and small, and for all regions and historical periods. WHG provides services for geolocating place names, linking individual attestations for "closely matched" places, and sharing the results of that work as searchable linked datasets.</p>
+                <p>Many scholars and students of the human past ask explicitly geospatial questions in their research, for example about distribution
+	                patterns over time and connectivity. Others simply want to make maps&mdash;to visualize the geography inherent in their source material.
+	                Either case requires making lists of historical place names and determining the coordinates of those places, rendering them mappable
+	                and amenable to spatial analysis. Finding even estimated locations for historical places is often a difficult and time-consuming task.
+	                A central goal of the World Historical Gazetteer project is to make it as easy as possible.  WHG is a platform for gathering in one system,
+	                over time, contributions of place name data&mdash;large and small, and for all regions and historical periods. WHG provides services for
+	                geolocating place names, linking individual attestations for "closely matched" places, and sharing the results of that work as searchable l
+	                inked datasets.</p>
                 <p class="subhead">Teaching</p>
-                <p>WHG is an excellent resource for teachers and students alike. Teachers can use information in WHG to refine lessons and to make custom maps for lectures or resources. The services offered by WHG will help make historical mapping easier and more accessible to everyone. In short, developing gazetteer datasets is an excellent classroom tool. <mark>The "Collections" feature will soon be expanded to facilitate building sets of individual records, and annotating them with explanatory abstracts or blog posts.</mark></p>
+                <p>WHG is an excellent resource for teachers and students alike. Teachers can use information in WHG to refine lessons and to make
+	                custom maps for lectures or resources. The services offered by WHG will help make historical mapping easier and more accessible to everyone.
+	                In short, developing gazetteer datasets is an excellent classroom tool. The "Place Collection" feature facilitates building and publishing
+	                sets of user-annotated place records within WHG, accompanied by an explanatory essay, image, and links to external resources.
+	                <mark>NOTE: this feature will be significantly enhamced in v3 (2024).</mark></p>
                 <p class="subhead">Reference</p>
-                <p>A "union index" of place attestations drawn from historical sources will over time increasingly link the disparate research of contributors on the dimension of place. Furthermore, by bringing together all the known references for a place without privileging any particular one, it decenters colonized name making. For instance, the WHG index contains 133 modern and historical name variants for the contemporary city of Beijing drawn from multiple sources, and 96 for the city of Istanbul. Searching for either Al Quds or Jerusalem returns contributed references for either.</p>
+                <p>The WHG "union index" of place attestations drawn from historical sources will over time increasingly link the disparate research of
+	                contributors on the dimension of place. Furthermore, by bringing together all the known references for a place without privileging any
+	                particular one, it decenters colonized name making. For instance, the WHG index contains 133 modern and historical name variants for
+	                the contemporary city of Beijing drawn from multiple sources, and 96 for the city of Istanbul. Searching for either Al Quds or Jerusalem
+	                returns contributed references for either.</p>
               </div>
-            </div>
+            </div> <!-- pills-why -->
             <div id="pills-what" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-what-tab">
               <h5>Data</h5>
               <div class="p-1">
                 <p class="subhead">Two Place Data Stores: Database and Index</p>
-{%comment%}                <p class="mb-0">
-                  <a class="popimg" href="#">
-                    <img src="{% static 'images/two-stores.png'%}" height=250 class="img-responsive"/>
-                  </a></p>{%endcomment%}
-                <p class="mb-1"><a class="popimg" href="#">
-                    <img src="{% static 'images/two-stores.png'%}" height=250 class="img-responsive" align="right"/>
-                  </a> Data from files uploaded to WHG in either the full Linked Place format (LP) or abbreviated LP-TSV format are imported into a PostgreSQL relational database and made available to the uploader ("owner") for viewing and augmenting via our reconciliation process. Dataset owners can designate other WHG users as co-owners or collaborating "members." Data cannot be edited in WHG, but datasets can be updated. <mark>Semi-automated update functionality is a work-in-progress. A staff-assisted process is possible in the interim.</mark></p>
-                
-                <p class="mb-1">The reconciliation process finds prospective matches to your records in Wikidata and/or Getty TGN. When dataset owner(s) accept an external record as a "close match," one or more <i>place_link</i> and <i>place_geom</i> records are added to the database, reflecting that match. This <i>augments</i> your dataset within the WHG database with concordance identifiers  (links), and geographical coordinates, but does not alter the original uploaded content in any way. When a dataset is flagged as public, its records become publicly accessible via the Search page, a public Browse page, and <a href="{% url 'usingapi' %}">the WHG API</a>.</p>
-                
-                <p class="mb-1">Separately from the database, WHG maintains a high-speed index that links records for closely matched places from multiple datasets. In the accessioning step, records from a new dataset are either linked with existing records for a given place (if any), or become a new "seed" record if not. The result, for example, is that a search of the index for either Istanbul, Constantinople, or Byzantium will lead users to the same Place Portal page listing attestations for that place by any of those names, as supplied by multiple sources.</p>
-                
+                <p class="mb-1">
+	                <a class="popimg" href="#"><img src="{% static 'images/two-stores.png'%}" height=250 class="" align="right"/></a>
+	                Data from files uploaded to WHG in either the full Linked Place format (LP) or abbreviated LP-TSV format are imported into a
+	                relational database and made available to the uploader ("owner") for viewing and augmenting via our reconciliation process.
+	                Dataset owners can designate other WHG users as co-owners or collaborating "members." Data cannot be edited in WHG, but datasets can be updated.</p>
+                <p class="mb-1">The reconciliation process finds prospective matches to your records in our index of 3.5 million Wikidata place records.
+	                When dataset owner(s) accept an external record as a "close match," one or more <i>place_link</i> and <i>place_geom</i> records are added
+	                to the database, reflecting that match. This <i>augments</i> your dataset within the WHG database, with concordance identifiers (links),
+	                and geographical coordinates, but does not alter the original uploaded content in any way. When a dataset is flagged as public,
+	                its records become publicly accessible via the Search page, a public Browse page, and <a href="{% url 'usingapi' %}">the WHG API</a>.</p>
+                <p class="mb-1">Separately from the database, WHG maintains a high-speed index that links records for closely matched places from multiple datasets.
+	                Following publication, an accessioning step links records from the new dataset with existing records for a given place (if any).
+	                If no matches are found, the new record becomes a very welcome new "seed." The result, for example, is that a search of the index for
+	                either Istanbul, Constantinople, or Byzantium will lead users to the same Place Portal page, listing sevral attestations for that place
+	                by any of those names, as supplied by multiple sources.</p>
                 <p class="subhead">Place</p>
-                <p class="mb-0">As of July, 2021, World Historical Gazetteer includes about 60,000 contributed historical place records and about 1.8 million "core" non-historical records</p>
+	              <p class="mb-0">As of July, 2023, World Historical Gazetteer includes about 141,000 contributed historical place records and about
+		              1.8 million "core" non-historical records.</p>
                 <p class="mb-0"><i><b>Public historical datasets</b> (all are in the database; indexing is partial and in progress for some, as noted)</i></p>
                 <ul>
-                  <li>10,643 records from the <a href="https://www.worldcat.org/title/dk-atlas-of-world-history/oclc/43091166" target="_blank">DK Atlas of World History</a> (Jeremy Black (ed.), 1999)</li>
-                  <li>13,258 <i>lugares</i> and 892 <i> territorios</i> from <a href="http://www.hgis-indias.net/" target="_blank">HGIS de las Indias</a> (Werner Stangl)</li>
-                  <li>20,365 settlements, archaeological sites, rivers and mountains from the <a href="http://pleiades.stoa.org" target="_blank">Pleiades gazetteer</a>. <mark>in progress</mark></li>
-                  <li>4,117 settlements from the <a href="http://ciolek.com/owtrad.html" target="_blank">Old World Trade Routes project</a> (T. Matthew Ciolek) <mark>in progress</mark></li>
-                  <li>3,584 settlements from <a href="https://www.euratlas.net/history/europe/" target="_blank">Euratlas <i>Periodis Web</i></a>  <mark>in progress</mark></li>
-                  <li>2,241 settlements from the <a href="https://althurayya.github.io/" target="_blank">al-Ṯurayyā Project</a>  <mark>in progress</mark></li>
-                  <li>1482 societies (peoples, cultural groups) from <a href="http://d-place.org" target="_blank">D-Place</a> a "Database of Places, Language, Culture and Environment." Records are drawn from mid-20th centutury anthropologiacl research.</li>
+                  <li>10,643 records from the <a href="https://www.worldcat.org/title/dk-atlas-of-world-history/oclc/43091166" target="_blank">
+	                  DK Atlas of World History</a> (Jeremy Black (ed.), 1999)</li>
+                  <li>13,258 <i>lugares</i> and 892 <i> territorios</i> from <a href="http://www.hgis-indias.net/" target="_blank">
+	                  HGIS de las Indias</a> (Werner Stangl)</li>
+	                <li>24,498 16c Polish localities from <a href="https://ihpan.edu.pl/en/structure/department-of-historical-atlas/historical-atlas-of-poland-detailed-maps-of-the-16th-century/" target="_blank">
+		                Polish Institute of History</a></li>
+                  <li>40,017 Chinese towns of 1911 <a href="https://chgis.fas.harvard.edu/" target="_blank">China Historical GIS</a>.</li>
+                  <li>20,365 settlements, archaeological sites, rivers and mountains from the <a href="http://pleiades.stoa.org" target="_blank">
+	                  Pleiades gazetteer</a>. <mark>in progress</mark></li>
+                  <li>4,117 settlements from the <a href="http://ciolek.com/owtrad.html" target="_blank">
+	                  Old World Trade Routes project</a> (T. Matthew Ciolek)</li>
+                  <li>3,584 settlements from <a href="https://www.euratlas.net/history/europe/" target="_blank">
+	                  Euratlas <i>Periodis Web</i></a> </li>
+                  <li>2,241 settlements from the <a href="https://althurayya.github.io/" target="_blank">
+	                  al-Ṯurayyā Project</a>  <mark>in progress</mark></li>
+                  <li>1482 societies (peoples, cultural groups) from <a href="http://d-place.org" target="_blank">
+	                  D-Place</a> a "Database of Places, Language, Culture and Environment." Records are drawn from mid-20th centutury anthropologiacl research.</li>
                 </ul>                
                 <p class="mb-0"><i><b>Core (non-historical) data</b></i></p>
-                  <ul>
-                    <li>942 records from <a href="http://geonames.org" target="_blank">GeoNames</a>, including cities with population > 500,000 and world capitals</li>
-                    <li>Approximately 1.8 million records from a January 2017 download from <a href="" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a>.</li>
-                    <li>Countries (252), rivers (982), and mountain ranges (217) from <a href="" target="_blank">Natural Earth</a>.</li>
-                    <li>Lakes (1491) from the <a href="" target="_blank">Wildlife Research Institute</a></li>
-                  </ul>
-                    <p>Several additional historical datasets are in queue for accessioning at this time. We welcome further contributions, large and small. If you have one in the works or in mind, please let us know via the <a href="{% url 'contact' %}">contact form</a>. We will publicize these additions as they occur via <a href="http://whgazetteer.org" target="_blank">our blog</a> and our Twitter account (<a href="https://twitter.com/WHGazetteer" target="_blank">@WHGazetteer</a>)</p>
-                <p class="subhead">Trace annotations (experimental)</p>
-                <p>Trace annotations are records annotating web resources about historical events, people, works and objects (“traces”) with identifiers for the places that are relevant to them. The annotations assert a relation between the trace and the place (for instance, they note that a place was the waypoint on a journey or the birthplace of an individual) and they attest a year or timespan during which the trace and the place were connected. Each annotation record joins one trace with any number of places. In connection with one another, one or multiple trace records link places together to create spatially explicit historical narratives. Early example datasets include:</p>
                 <ul>
-                <li>Hernán Cortes and the Conquest of the Aztec Empire</li>
-                <li>The Journey of Xuanzang, a seventh century Buddhist Monk</li>
-                <li>The Lifepath of Gautama Buddha</li>
-                <li>The Empire of Alexander</li>
+                  <li>942 records from <a href="http://geonames.org" target="_blank">GeoNames</a>, including cities with population > 500,000 and world capitals</li>
+                  <li>Approximately 1.8 million records from a January 2017 download from <a href="" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a>.</li>
+                  <li>Countries (252), rivers (982), and mountain ranges (217) from <a href="" target="_blank">Natural Earth</a>.</li>
+                  <li>Lakes (1491) from the <a href="" target="_blank">Wildlife Research Institute</a></li>
                 </ul>
-              </div>            
-            </div>
+                <p>Numerous additional historical datasets are in queue for accessioning at this time. We welcome further contributions, large and small.
+	                If you have one in the works or in mind, please let us know via the <a href="{% url 'contact' %}">contact form</a>. We will publicize
+	                these additions as they occur via <a href="http://whgazetteer.org" target="_blank">our blog</a> and our Twitter account
+	                (<a href="https://twitter.com/WHGazetteer" target="_blank">@WHGazetteer</a>)</p>
+              </div>
+            </div> <!-- pills-what -->
             <div id="pills-do" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-do-tab">
-              <div class="p-1">
-                <p>Details for how to use the following services appear in the "Page by Page" section of this Guide and in help screens throughout the application.</p>
-                <p class="subhead">Linking and geocoding via reconciliation</p>
-                <p>A core feature of WHG is its reconciliation services, which allow you to upload place records drawn from your historical sources and find potential matches for them in two authority resources: <a href="https://www.wikidata.org/" target="_blank">Wikidata</a> and the <a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a>. Records from both include geographic coordinates in almost cases. Potential matches are queued for review, and when you accept a match, your original dataset is augmented with geometry from the authority record as well as the authority identifier. Many Wikidata records also include concordances: identifiers from GeoNames, VIAF, and Library of Congress among others. Those are also added to the original dataset.</p>
-                <p>The scripts that we have developed to suggest potential matches do not simply match names; they make use of context provided in both the uploaded and authority records, including: a) all name variants, b) modern country or study area bounds, c) place type, and d) any provided coordinates.</p>
-                
-                <p class="subhead">Downloading augmented data</p>
-                <p>Having augmented an uploaded dataset with additional geometry and links, its owner can download it for mapping or further deveopment or any research purposes. Note that the file they download is a revised version of the original and users must manage the different versions.</p>
-                
-                <p class="subhead">Sharing (publication)</p>
-                <p>Registered users can request a dataset be flagged as "public," and after a brief review by WHG editorial staff, it is effectively published as Linked Open Data. Upon upload, each record is assigned a unique permanent numerical identifier within WHG. It also inherits a unique dataset <b>label</b> identifier upon upload, which can be combined with the unique <b>src_id</b> you had given it, forming another permanent identifier within WHG. The <a href="{% url 'usingapi' %}">Using the API</a> page explains options for that service.</p>
-                
-                <p class="subhead">Contributing</p>
-                <p>All of the above occurs in your private workspace. Once your dataset has as many geometries and links to external authorities as the reconciliation process can discover, you can take the extra important step of accessioning it as a contribution to the WHG union index. Some resons to do this include:</p>
-                <ul>
+              <p>Details for how to use the following services appear in the "Page by Page" section of this Guide and in help screens throughout the application.</p>
+              <p class="subhead">Linking and geocoding via reconciliation</p>
+              <p>A core feature of WHG is its reconciliation services, which allow you to upload place records drawn from your historical sources
+                and find potential matches for them in two authority resources: <a href="https://www.wikidata.org/" target="_blank">Wikidata</a>
+                and the <a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a>.
+                Records from both include geographic coordinates in almost cases. Potential matches are queued for review, and when you accept a match,
+                your original dataset is augmented with geometry from the authority record as well as the authority identifier. Many Wikidata records also
+                include concordances: identifiers from GeoNames, VIAF, and Library of Congress among others. Those are also added to the original dataset.</p>
+              <p>The scripts that we have developed to suggest potential matches do not simply match names; they make use of context provided in both the
+                uploaded and authority records, including: a) all name variants, b) modern country or study area bounds, c) place type,
+                and d) any provided coordinates.</p>
+              <p class="subhead">Downloading augmented data</p>
+              <p>Having augmented an uploaded dataset with additional geometry and links, its owner can download it for mapping or further development
+                or any research purposes. Note that the file they download is a revised version of the original and users must manage the different versions.</p>
+              <p class="subhead">Sharing (publication)</p>
+              <p>Registered users can request a dataset be flagged as "public," and after a brief review by WHG editorial staff, it is effectively published
+                as Linked Open Data. Upon upload, each record is assigned a unique permanent numerical identifier within WHG. It also inherits a unique
+                dataset <b>label</b> identifier upon upload, which can be combined with the unique <b>src_id</b> you had given it, forming another permanent
+                identifier within WHG. The <a href="{% url 'usingapi' %}">Using the API</a> page explains options for that service.</p>
+              <p class="subhead">Contributing</p>
+              <p>All of the above occurs in your private workspace. Once your dataset has as many geometries and links to external authorities as the
+                reconciliation process can discover, you can take the extra important step of accessioning it as a contribution to the WHG union index.
+                Some resons to do this include:</p>
+              <ul class="smallish">
                 <li>Your place attestations now appear in index search results, in many cases linked with other attestations for the same place.</li>
-                <li>Because of this, researchers concerned with a particular place or set of places can learn about other people also interested in the same place(s)</li>
-                <li>If any of your records refer to places that were not previously in the WHG index, they will become new "seed" records. In time, people will spend far less effort geocoding their own place records</li>
-                <li>The WHG API allows the index to be connected to tools such as Pelagios' <a href="http://recogito.pelagios.org" target="_blank">Recogito</a>. When it is, you and others will have a far easier time annotating historical texts with authority records (and coordinates) for place references.</li>
-                <li>While simply flagging an uploaded dataset as "public" effectively publishes it, the extra step of accessioning to the index makes it that much more useful in the growing ecosystem of linked historical geodata.</li>
-                </ul>
-              </div>            
-            </div>
+                <li>Because of this, researchers concerned with a particular place or set of places can learn about other people also interested in
+	                the same place(s)</li>
+                <li>If any of your records refer to places that were not previously in the WHG index, they will become new "seed" records. In time,
+	                people will spend far less effort geocoding their own place records</li>
+                <li>The WHG API allows the index to be connected to tools such as Pelagios' <a href="http://recogito.pelagios.org" target="_blank">Recogito</a>.
+	                When it is, you and others will have a far easier time annotating historical texts with authority records (and coordinates) for place references.</li>
+                <li>While simply flagging an uploaded dataset as "public" effectively publishes it, the extra step of accessioning to the index makes it
+	                that much more useful in the growing ecosystem of linked historical geodata.</li>
+              </ul>
+            </div> <!-- pills-do -->
             <div id="pills-comm" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-comm-tab">
               <div class="p-1">
                 <p class="subhead">Community</p>
-                <p>The WHG project belongs to a growing community interested in linking information <i>about historical places</i> and linking historical information from multiple disciplines <i>via place</i>. As such we are active partners in the <a href="https://pelagios.org/" target="_blank">Pelagios Network</a>.</p>
+                <p>The WHG project belongs to a growing community interested in linking information <i>about historical places</i> and linking
+	                historical information from multiple disciplines <i>via place</i>. As such we are active partners in the
+	                <a href="https://pelagios.org/" target="_blank">Pelagios Network</a>.</p>
                 <p class="subhead">Domains of Interest</p>
-                <p><a href="http://pleiades.stoa.org" target="_blank">Pleiades</a>, the "community-built gazetteer and graph of ancient places," is a trailblazing project that more than a decade ago began gathering, curating and sharing contributed data, focused on the Mediterranean region in antiquity. Its success has been instructive in several ways. The project was and is the product of a community&mdash;in its case classicists, archaeologists, and historians of the region and period. It has a dozen volunteer editors, numerous reviewers, and continues to grow in depth and breadth.</p>
-                <p>We at World Historical Gazetteer anticipate our own data aggregation and publishing platform will grow by virtue of similar geographic and temporal "domains of interest." We aim to prioritize projects about the Global South. Our list of early and prospective contributors bears this out&mdash;it is spatiotemporally clustered. For example, Werner Stangl's HGIS de las Indias has seeded an early Latin American domain, and several other contributions of colonial and pre-colonial Latin America data are expected soon. Other emerging clusters include: Dutch History, the "Atlantic World," the Ottoman Empire, the Islamic World, Central Eurasia, and China.</p>
+                <p><a href="http://pleiades.stoa.org" target="_blank">Pleiades</a>, the "community-built gazetteer and graph of ancient places,"
+	                is a trailblazing project that more than a decade ago began gathering, curating and sharing contributed data, focused on the Mediterranean
+	                region in antiquity. Its success has been instructive in several ways. The project was and is the product of a community&mdash;in its case classicists,
+	                archaeologists, and historians of the region and period. It has a dozen volunteer editors, numerous reviewers, and continues to grow
+	                in depth and breadth.</p>
+                <p>We at World Historical Gazetteer anticipate our own data aggregation and publishing platform will grow by virtue of similar geographic
+	                and temporal "domains of interest." We aim to prioritize projects about the Global South. Our list of early and prospective contributors
+	                bears this out&mdash;it is spatiotemporally clustered. For example, Werner Stangl's HGIS de las Indias has seeded an early Latin American domain,
+	                and several other contributions of colonial and pre-colonial Latin America data are expected soon. Other emerging clusters
+	                include: Dutch History, Central Asia, the "Atlantic World," the Ottoman Empire, the Islamic World, and China.</p>
                 <p>Expanding coverage of linked data resources to include under-represented areas like the Global South are an important priority.</p>
               </div>            
-            </div>
+            </div> <!-- pills-comm -->
           </div>
-        </div>
+        </div> <!-- guide_overview -->
         <div id="guide_pages" class="guide tab-pane fade" role="tabpanel">
           <ul class="nav nav-pills nav-fill mt-3 mb-1" role="tablist">
             <li class="nav-item">
@@ -156,129 +204,216 @@
               <div id="gp_home" class="tute-section">
                 <div class="px-1">
                   <h5 class="mt-0">Register/Login/User Profile</h5>
-                  <p>Registration and login are required to be able to upload datasets, designate collaborators, to use our reconciliation services to find matches in modern placename authorities (<a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank">Wikidata</a> and <a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> so far), and ultimately, to contribute your data to the WHG index. Once logged in, top-level menu options for "Data", and a user profile appear.</p>
+                  <p>Registration and login are required to be able to upload datasets, designate collaborators, to use our reconciliation services to find matches in
+	                  <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank">Wikidata</a> and ultimately, to contribute your data to the WHG index.
+	                  Once logged in, top-level menu options for "Data", and a user profile appear.</p>
                   <h5>Search :: Places</h5>
                   <p>There are two place data stores in WHG, therefore two search options: our "union index," and the WHG database.</p> 
-                  <p>Our <sr>union index</sr> holds records for about 1.8 million places (having over 3 million names) that have been fully accessioned. That is, to the extent possible, records for the same place are linked, and returned together in a set. Typing a name then pressing the {Enter} key performs a search, presents a list of results, and maps those which have geometry (not all do). Clicking a result item will highlight it on the map, providing further context. Clicking the name link takes you to the index record's "portal" page where any number of attestation "cards" drawn from our core datasets (grey banner) and multiple contributed datasets (beige banner) are gathered.</p>
-                  <p>The <sr>database search</sr> option queries records in the WHG database from all datasets flagged as "public," whether they have been fully accessioned (i.e. reconciled against the union index) or not. Datasets are made public on request by their owners, and following a review by WHG editorial staff.</p>
-                  <p>Pre-filters are available to constrain both kinds of place searches: a) broad feature class, b) temporal (earliest, latest years), and c) spatial (bounds of world regions, modern countries, and user "study areas."). Results can be sorted and further filtered by specific place type or modern country bounds.
-                  <h5>Search :: Traces</h5>
-                  <p> Search for trace data runs against a separate index. At this time there are only a few dozen example trace records. Try typing 'empire' or "buddhist" to see a few examples. Selecting one of the "auto-suggestions" will list and map the places referenced in the trace record. As with places, clicking a result item highlights the place on the map, and clicking its name takes you to its place portal page.</p>
-                  <p><mark>Integration of trace data</a> is at an early experimental stage. We welcome suggestions for how trace data can be better integrated into the WHG interface.</mark></p>
+                  <p>Our <sr>union index</sr> holds records for about 2 million places (having over 5 million names) that have been fully accessioned.
+	                  That is, to the extent possible, records for the same place are linked, and returned together in a set. Typing a name then pressing
+	                  the {Enter} key performs a search, presents a list of results, and maps those which have geometry (not all do). Clicking a result item
+	                  will highlight it on the map, providing further context. Clicking the name link takes you to the index record's "portal" page where
+	                  any number of attestation "cards" drawn from our core datasets (grey banner) and multiple contributed datasets (beige banner) are gathered.</p>
+                  <p>The <sr>database search</sr> option queries records in the WHG database from all published datasets, whether they have been fully
+	                  accessioned (i.e. reconciled against the union index) or not. Datasets are made public on request by their owners, and following a
+	                  review by WHG editorial staff.</p>
+                  <p>Pre-filters are available to constrain both kinds of place searches: a) broad feature class, b) temporal (earliest, latest years),
+	                  and c) spatial (bounds of world regions, modern countries, and user "study areas."). Results can be sorted and further filtered by
+	                  specific place type or modern country bounds.
                 </div>
               </div>
             </div>
             <div id="pills-data" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-data-tab">
               <div id="gp_data" class="tute-section"><a name="dashboard"></a>
-                <!--<p class="subhead strong">Data dashboard</p>-->
-                <p>The Data dashbord page lists any Datasets created by a user or for which they are a collaborator, as well as any Study Areas and Collections they have created. Clicking an "add new" or "create new" link ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing a Dataset, Study Area, or Collection.</p>
+                <p>The Data dashboard page lists any Datasets and Collections created by a user or for which they are a collaborator,
+	                as well as any Study Areas they have created. Clicking an "add new" or "create new" link
+	                ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing a Dataset, Study Area, or Collection. The
+                  'create' pages in each case describe how to proceed.</p>
                 <h5>Datasets</h5>
                 <h6>Place data</h6>
-                <p>Registered users can create Place datasets by uploading files in one of two formats: the expressive GeoJSON-LD based <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places format</a> ("LP format" for short), or the simpler <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.3.md" target="_blank">LP-TSV format</a>. Considerations for making the choice are found in the <a href="{% url 'main:tute-choosing' %}">"Choosing an upload data format"</a> tutorial.</p>
-                <p>Help icons ({% fontawesome_icon 'question-circle' color='#336699' %}) for each field in the "Upload dataset" form provide popup instruction for filling it.</p>
-                <p>Uploaded data files are validated for adherence to the relevant format spec, LP or LP-TSV. If there are formatting errors, details of the errors are displayed (insofar as possible) and after correcting them the file upload can be attempted again.</p>
+                <p>Registered users can create Place datasets by uploading files in one of two formats: the expressive GeoJSON-LD based
+	                <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places format</a> ("LP format" for short),
+	                or the simpler <a href="https://github.com/LinkedPasts/linked-places-format/blob/main/tsv_0.4.md" target="_blank">LP-TSV format</a>.
+	                Considerations for making the choice are found in the <a href="{% url 'main:tute-choosing' %}">"Choosing an upload data format"</a> tutorial.</p>
+                <p>Help icons ({% fontawesome_icon 'question-circle' color='#336699' %}) for each field in the "Upload dataset" form provide popup instruction
+	                for filling it.</p>
+                <p>Uploaded data files are validated for adherence to the relevant format spec, LP or LP-TSV. If there are formatting errors, details of the
+	                errors are displayed (insofar as possible) and after correcting them the file upload can be attempted again.</p>
                 <p>Upon successful upload, a <a href="{% url 'main:tute-guide' %}#dataset-portal">Dataset Portal page</a> is displayed.</p>
-                <h6>Trace data</h6>
-                <p><mark>Automated trace data uploads are not yet enabled. <a href="{% url 'contact' %}">Contact the WHG team</a> with inquiries about creating and adding new trace dataesets.</mark></p>
-                <h5>Study Areas</h5>
-                <p>These are user-created named polygon bounds used to constrain the searches used in the reconciliation process. See the <a href="#reconciliation">Reconciliation</a> section to the right of this one.</p>
                 <h5>Collections</h5>
-                <p><mark>Planned, but not yet available. Users would be able to add place and trace records to personal collections, which can be mapped, edited, and optionally, shared. Would be useful for teaching scenarios. </mark></p>
+	              <p>Registered users can create two kinds of collections, <b>Place Collections</b>, and <b>Dataset Collections</b>. <mark>Significant enhancements are
+		              in development for Version 3.</mark></p>
+	              <ul>
+	                <li><b>Place Collections</b> are thematic sets of place records already in WHG. Each record in a Place Collection can be annotated with a note,
+		                temporal information, and user-defined tags. The collection itself can include an accompanying essay, an image, and links to
+		                relevant external resources.</li>
+	                <li><b>Dataset Collections</b> are sets of published datasets already in the WHG system. Linking datasets in this way allows users and collaborating
+	                groups to assemble a 'Gazetteer of {x}' from multiple discrete sources, and to present them together.</li>
+                </ul>
+                <h5>Study Areas</h5>
+                <p>These are user-created named polygon bounds used to constrain the searches used in the reconciliation process.
+	                See the <a href="#reconciliation">Reconciliation</a> section to the right of this one.</p>
               </div>
             </div>
             <div id="pills-dataset" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-dataset-tab">
               <div id="gp_dataset" class="tute-section"><a name="dataset-portal"></a>
-                <p>The owner's Dataset page has several tabbed sections: Metadata, Browse, Reconciliation, Sharing, and Log/Comments.</p>
+                <p>The Dataset portal is private to the dataset owner and designated collaborators. It has several tabbed sections: Metadata, Browse,
+	                Linking, Collaborators, and Notes & Log.</p>
                 <h5>Metadata</h5>
-                <p>This section displays user-created and auto-generated metadata for a dataset and its most recent uploaded data file source. Several fields can be edited. Status statistics are displayed on the right side of the screen: initial counts of rows, name variants, links, and geometries, as well as counts of link and geometry records added during the reconciliation review process. <mark>A feature for updating a dataset with a new file upload is in progress. In the meantime, <a href="{% url 'contact' %}">contact us</a> if this is a consideration.</mark> </p>
+                <p>This section displays user-created and auto-generated metadata for a dataset and its most recent uploaded data file source.
+	                Several fields can be edited. Status statistics are displayed on the right side of the screen: initial counts of rows, name variants,
+	                links, and geometries, as well as counts of link and geometry records added during the reconciliation review process.</p>
                 <h5>Browse</h5>
-                <p>This section combines a sortable, searchable list of the records currently in the dataset, and a map displaying any geometry it includes. Once a reconciliation task has been run, a column will appear here to view and filter by review status. Note that new links and geometry from authority records matched in the reconciliation review process are reflected here, as new <i>place_link</i> and/or <i>place_geom</i> records are written with each match.</p>
-                <h5>Reconciliation</h5>
-                <p>Reconciliation tasks are initiated from this section and listed for access to review screens; <a href="#reconciliation">a process outlined in a later section</a>. A summary of the initial results is generated and displayed in a list, with links provided to access the <a href="#review">review screen</a>,</p>
-                <p>It is also possible to delete the task, its associated hits, and any match records created in review work. <span class="text-danger">Caution! There is no recovery from these clearing actions!</span></p>
+                <p>This section combines a sortable, searchable list of the records currently in the dataset, and a map displaying any geometry it includes.
+	                Once a reconciliation task has been run, a column and filter dropdown are added, to manage record-level status. Note that new links and
+	                geometry from authority records matched in the reconciliation review process are reflected in each record's info box under the map,
+	                as new <i>place_link</i> and/or <i>place_geom</i> records are written with each match.</p>
+                <h5>Linking</h5>
+                <p>Linking is a broad term for what our reconciliation service does. Tasks are initiated from this section and listed for access to
+	                review screens; <a href="#reconciliation">a process outlined in a later section</a>. A summary of the initial results is generated
+	                and displayed in a list, with links provided to access the <a href="#review">review screen</a>,</p>
+                <p>It is also possible to delete the task, its associated hits, and any match records created so far in review work.
+	                <span class="text-danger">Caution! There is no recovery from these clearing actions!</span></p>
                 <div class="ml-2 contributing">
-                <p class="mb-0 strong red-head">Contributing a dataset to WHG</p>
-                <p>After a dataset has been uploaded and, using our reconciliation services, augmented with as many links (matches) to modern authorities as possible (<a href="#reconciliation">see Reconciliation</a>), it can be considered for accessioning&mdash;that is, contributed to the WHG "union index." At this time all accessioning will be initiated by the WHG project team, and review performed by the dataset owner and collaborators.</p>
-                <p>Accessioning a dataset to WHG entails reconciling its records to the WHG index. Each record is compared with the WHG index to see if the referenced place already has one or more attestations from another dataset.                 If an incoming record has a concordance "link"" in common with with one already in the index, it will be automatically indexed as a "child" or "sibling" of the matched record (owners have the opton to review these or auto-accept them).</p>
-                <p>Records for which there are no prospective matches are automatically indexed as a "parent," in effect a new seed record for a place. Records for which there <b>are</b> prospective matches are queued for review, just as with the Wikidata and TGN reconciliation tasks. Matched records become part of the set for a given place. Unmatched records become parent "seeds."</p>
-                <p><mark>In this way, accessioning relies on incoming Place records having as many associated "place_link" records as can be obtained.</mark>
+	                <p class="mb-0 strong red-head">Contributing a dataset to WHG</p>
+	                <p>After a dataset has been uploaded and, using our reconciliation services, augmented with as many links (matches) to modern authorities
+		                as possible (<a href="#reconciliation">see Reconciliation</a>), it can be considered for accessioning&mdashthat is, contributed to the
+		                WHG "union index." At this time all accessioning will be initiated by the WHG project team, and review performed by the dataset owner
+		                and their designated collaborators, if any.</p>
+	                <p>Accessioning a dataset to WHG entails reconciling its records to the WHG index. Each record is compared with the WHG index to see if
+		                the referenced place already has one or more attestations from another dataset. If an incoming record has a concordance "link"" in common
+		                with one already in the index, it will be automatically indexed as a "child" or "sibling" of the matched record (owners have the opton
+		                to review these or auto-accept them).</p>
+	                <p>Records for which there are no prospective matches are automatically indexed as a "parent"&mdashin effect, a new seed record for a place.
+		                Records for which there <b>are</b> prospective matches are queued for review, just as with Wikidata reconciliation tasks.
+		                Matched records become part of the set for a given place. Unmatched records become parent "seeds."</p>
+	                <p><mark>In this way, accessioning relies on incoming Place records having as many associated "place_link" records as can be obtained.</mark>
                 </div>
-                <h5>Sharing</h5>
-                <p>Owners of a dataset can designate any number of registered WHG users as collaborators, in either a "co-owner" or "member" role. Co-owners have complete control over a dataset; members can view the dataset and perform review of prospective matches generated by reconciliation tasks.</p>
-                <h5>Log & Comments</h5>
+                <h5>Collaborators</h5>
+                <p>Owners of a dataset can designate any number of registered WHG users as collaborators, in either a "co-owner" or "member" role.
+	                Co-owners have complete control over a dataset; members can view the dataset and perform review of prospective matches generated by
+	                reconciliation tasks.</p>
+                <h5>Notes & Log</h5>
                 <p>Actions related to datasets are logged and listed here.</p>
-                <p>On the Reconciliation Review and Place Portal pages, users can create comments specific to a database record. Comments for all places in a dataset are listed here. <mark>NOTE: Comments suggest followup action, e.g. correction of errors. We are contemplating how such corrections might be accomplished within the WHG interface.</mark></p>
+                <p>User-created notes and comments from the Reconciliation Review and Place Portal pages are listed here, with a download option.
+	                <mark>NOTE: Comments suggest followup action, e.g. correction of errors. We are contemplating how such corrections might be accomplished
+		                within the WHG interface.</mark></p>
               </div>            
             </div>
             <div id="pills-recon" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-recon-tab">
               <div id="gp_recon" class="tute-section"><a name="reconciliation"></a>
-                <!--<p class="subhead strong">Initiate Reconciliation page</p>-->
-                <p>Reconciliation is the process of linking your place records to existing records in online place name authorities&mdash;including, as a last step to the WHG union index. The external reconciliation sources offered by WHG are Wikidata and Getty TGN. <mark>DBpedia and GeoNames <i>may</i> be added in the future</mark>. The purpose of reconciliation to external sources is to augment a dataset with new concordances ("place_link" records in WHG), and optionally, new geometry ("place_geom" records) derived from the authority.</p>
-                
-                <p>The primary motivation for many users is finding geographic coordinates for unlocated place names, in order to make their data more fully mappable and amenable to spatial and network analyses. Beyond that, making a dataset as rich with links to external authorities as possible is a crucial step in making it a solid contribution to the WHG index. Once historical place names are geolocated, it is to everyone's benefit if that work is shared!</p>
-                
-                <p>In each case, the authority data store is queried for matches with your records, one by one. In fact, each query consists of multiple "passes." The first looks for any authority identifiers in common. If found, the records can be automatically linked. The next pass includes all the context your records may contain: a primary name plus all variants; one or more place type; bounding modern countries or user-defined Study Area as a spatial constraint; coordinate geometry for the feature; and name(s) of "parent" entities. Subsequent passes relax the query if no potential matches (hits) are found. Resulting hits for all records are queued for <a href="#review">review by the dataset creator</a>, in batches labeled "pass 0," "pass 1" and so on.</p>
-                
+                <p>Reconciliation is the process of linking your place records to existing records in online place name authorities&mdash;including, as a last step
+	                to the WHG union index. The reconciliation source offered by WHG at this time is our index of 3.5 million Wikidata place records.
+	                The purpose of reconciliation to external sources is to augment a dataset with new concordances ("place_link" records in WHG),
+	                and optionally, new geometry ("place_geom" records) derived from the authority.</p>
+                <p>The primary motivation for many users is finding geographic coordinates for unlocated place names, in order to make their data more
+	                fully mappable and amenable to spatial and network analyses. Beyond that, making a dataset as rich with links to external authorities as possible
+	                is a crucial step in making it a solid contribution to the WHG index. Once historical place names are geolocated, it is to everyone's benefit
+	                if that work is shared!</p>
+                <p>In each case, the Wikidata index is queried for matches with your records, one by one. In fact, each query consists of multiple "passes."
+	                The first looks for any authority identifiers in common. If found, the records can be automatically linked. The next pass includes all the
+	                context your records may contain: a primary name plus all variants; one or more place type; bounding modern countries or user-defined
+	                Study Area as a spatial constraint; coordinate geometry for the feature. Subsequent passes relax the query if no potential matches (hits)
+	                are found. Resulting hits for all records are queued for <a href="#review">review by the dataset creator</a>, in batches labeled "pass 0,"
+	                "pass 1" and "pass 2."</p>
                 <h6>Wikidata</h6>
-                <p>WHG maintains a locally indexed copy of about 3.6 million Wikidata place records. Wikidata reconciliation tasks process 150-180 records per minute. Almost all Wikidata records contain geometry and concordances with other authorities. When you confirm a Wikidata match, we create a "place_link" record not only for the Wikidata ID but for concordances with several other authorities if found, including Getty TGN, Bibliotèque nationale de France, Pleiades, Wikipedia, GeoNames, VIAF, Deutsche National Bibliothek, and Library of Congress.</p>
-                
-                <h6>Getty TGN</h6>
-                <p>WHG also maintains a locally indexed copy of about 1.8 million place records retrieved from a TGN dump file in March, 2018. Almost all TGN records include a point geometry, but have no concordances with other authorities and no structured temporal attributes.</p>
-                <p><mark>We hope to periodically update these indexes in the future</mark></p>
-                
+                <p>WHG maintains a locally indexed copy of about 3.6 million Wikidata place records. Wikidata reconciliation tasks process 150-180 records per minute.
+	                Almost all Wikidata records contain geometry and concordances with other authorities. When you confirm a Wikidata match, we create a "place_link"
+	                record not only for the Wikidata ID but for concordances with several other authorities if found, including Getty TGN,
+	                Bibliotèque nationale de France, Pleiades, Wikipedia, GeoNames, VIAF, Deutsche National Bibliothek, and Library of Congress.</p>
+                <p><mark>We hope to periodically update our Wikidata index in the future</mark></p>
                 <h6>Study Areas</h6>
-                <p>Many toponyms appear repeatedly in multiple locations, referring to different places, often far apart (e.g. Latin America and the Iberian Peninsula). To aid the reconciliation process, users can define a Study Area that will constrain the search for matches to its bounds, by a) entering a series of 2-letter country codes, which will generate a hull shape, or b) by drawing a polygon on a map. Alternatively, a pre-defined region can be chosen from a separate dropdown menu.</p>
+                <p>Many toponyms appear repeatedly in multiple locations, referring to different places, often far apart (e.g. Latin America and the
+	                Iberian Peninsula). To aid the reconciliation process, users can define a Study Area that will constrain the search for matches to its bounds,
+	                by a) entering a series of 2-letter country codes, which will generate a hull shape, or b) by drawing a polygon on a map.
+	                Alternatively, a pre-defined region can be chosen from a separate dropdown menu.</p>
               </div>            
             </div>
             <div id="pills-review" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-review-tab">
               <div id="gp_review" class="tute-section"><a name="review"></a>
                 <h6>Reviewing "hits"</h6>
-                <p>Prospective matches to external authorities are <b>not</b> automatically added to the WHG database during reconciliation; i.e. new "place_geom" and "place_link" records augmenting the dataset are created only by the Reconciliation Review step performed by the dataset creator or specified collaborators.</p>
-                <p>The Review page presents those dataset records that got one or more prospective matches ("hits') on the left of the screen, one by one, and a list of those hits on the right. A small map displays geometry for your record with a green marker, and geometries of all hits with orange markers. Hovering over the globe symbol&nbsp;({% fontawesome_icon 'globe' color='#336699' %}) in a hit item highlights its position in the map.</p>
-                
-                <p>The objective is to determine, for each dataset record, whether any of the hits are a "closeMatch" to it. By default, "no match" is selected for each hit. The reviewer can optionally change the selection to "closeMatch" for one or more hits. In any case, clicking save records the choice and advances to the next record. Attributes of the dataset record and the hits provide context to assist making the assessment.</p>
-                
+                <p>Prospective matches to Wikidata (and discovered authority IDs) are <b>not</b> automatically added to the WHG database during reconciliation;
+	                i.e. new "place_geom" and "place_link" records augmenting the dataset are created only by the Reconciliation Review step
+	                performed by the dataset creator or specified collaborators.</p>
+                <p>The Review page presents those dataset records that got one or more prospective matches ("hits') on the left of the screen,
+	                one by one, and a list of those hits on the right. A small map displays geometry for your record (if any) with a green marker, and geometries
+	                of all hits with orange markers. Hovering over the globe symbol&nbsp;({% fontawesome_icon 'globe' color='#336699' %}) in a hit item
+	                highlights its position in the map.</p>
+                <p>The objective is to determine, for each dataset record, whether any of the hits are a "closeMatch" to it. By default,
+	                "no match" is selected for each hit. The reviewer can optionally change the selection to "closeMatch" for one or more hits.
+	                In any case, clicking save records the choice and advances to the next record. Attributes of the dataset record and listed hits provide
+	                context to assist making the assessment.</p>
                 <h6>What is a Match?</h6>
-                <p>The term <i>closeMatch</i> used by WHG comes from the <a href="https://www.w3.org/TR/2009/REC-skos-reference-20090818/" target="_blank">Simple Knowledge Organization System (SKOS) vocabulary</a>, a data model commonly used in linked data applications. For WHG, a Place is considered a SKOS:Concept, described by data records in <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places format</a>, so assertions of a skos:closeMatch between your record and that of an external authority indicates:</p>
-                <!--<ul>-->
+                <p>The term <i>closeMatch</i> used by WHG comes from the
+	                <a href="https://www.w3.org/TR/2009/REC-skos-reference-20090818/" target="_blank">Simple Knowledge Organization System (SKOS) vocabulary</a>,
+	                a data model commonly used in linked data applications. For WHG, a Place is considered a SKOS:Concept, described by data records in
+	                <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places format</a>, so assertions of a skos:closeMatch between
+	                your record and that of an external authority indicates:</p>
                 <p class="ml-5 my-2">"...(the) two concepts are sufficiently similar that they can be used interchangeably in some information retrieval applications"</p>
-                <!--</ul>-->
-                <p class="mb-4  >Note that <i>closeMatch</i> is a super-property of <i>exactMatch</i>; that is, every <i>exactMatch</i> is also a <i>closeMatch</i>. Clear? Oh well. Practically speaking, for WHG asserting closeMatch serves as a linking "glue." Specifically, records that share one or more common authority link will be conflated (linked) <b>in our union index" only</b>, and returned together in response to queries. For example, records for Abyssinia and Ethiopia from different sources share two links, to a DBPedia record and a TGN record. Therefore, they appear together when searching for either Abyssinia or Ethiopia. They are <i>not</i> conflated or linked in any way within the WHG database.</p>
+                <p class="mb-4">Note that <i>closeMatch</i> is a super-property of <i>exactMatch</i>; that is, every <i>exactMatch</i> is also a
+	                <i>closeMatch</i>. Clear? Oh well! Practically speaking, for WHG asserting closeMatch serves as a linking "glue."
+	                Specifically, records that share one or more common authority link will be conflated (linked) <b>in our "union index" only</b>,
+	                and returned together in response to queries. For example, records for Abyssinia and Ethiopia from different sources share two links,
+	                to a DBPedia record and a TGN record. Therefore, they appear together when searching for either Abyssinia or Ethiopia.
+	                They are <i>not</i> conflated or linked in any way within the WHG database.</p>
               </div>
+            </div>
           </div> <!-- pills-pagesContent -->
         </div> <!-- guide_pages -->
-      </div> <!-- tab_content-->
         <div id="guide_faq" class="guide tab-pane fade" role="tabpanel">
-          <div id="" class="tute-section">
-            <p class="subhead">What now?</p>
-            <p class="answer">WHG v2.1 includes several significant improvements to v1, but development of the platform is still at a relatively early stage. The highest immediate priority is adding significantly more historical data. Apart from adding content, several additional features are planned, and grant applications to support those activities are pending. We are hopeful that WHG can be sustained and improved over the long term.</p>
-            <p class="subhead">What is a gazetteer?</p>
-            <p class="answer">In its simplest form, a gazetteer is a list of place names. Typically, digital gazetteers  provide some level of description for each listed place, e.g. its type and geographic coordinates. Historical gazetteers include prior names and some level of temporal information. The <b>Linked Places format</b> (<a href="https://github.com/LinkedPasts/linked-places" target="_blank">spec {% fontawesome_icon 'external-link' %}</a>; <a href="{% url 'main:tute-choosing' %}">tutorial</a>) used by WHG allows us to record temporally scoped name variants, coordinates, place types, and relations with other places, as well as related descriptions and depictions.</p>
-            <p class="subhead">Who uses historical gazetteers?</p>
-            <p class="answer">Historical gazetteers are useful for anyone concerned with the history of a place or group of places, including researchers, teachers, and students. They help connect our present to our past.</p>
-            <p class="subhead">What is a place?</p>
-            <p class="answer">The term has multiple related meanings. A few we like: (i) one answer to a where question, (ii) a setting for events and activity, (iii) "...an object resulting from a shared identification of a location. As an object, it may become a part of a network and participate in events" (<a href="https://asistdl.onlinelibrary.wiley.com/doi/pdf/10.1002/asi.24194" target="_blank">Purves, Winter & Kuhn 2019</a> {% fontawesome_icon 'external-link' %}). Attributes of places include names, locations, and types&mdash;all of which routinely change over time.</p>
-            <p class="subhead">What is a place in WHG?</p>
-            <p class="answer">A place record represents one or more attestations of a place found in historical sources or in modern gazetteers and name authorities. Due to our use of <a href="{% url 'main:tute-choosing' %}">Linked Places format</a>, a WHG place record may include any number of names, types, locations (geometry), relations, descriptions, depictions, and links with other records. The entire record can be temporally scoped with a "when" assertion, as can any individual name, type, geometry or relation.</p>
-            <p class="subhead">What is the geographic and temporal scope of WHG?</p>
-            <p class="answer">The geographic scope is global, and the temporal scope is roughly the span of written history. </p>
-            <p class="subhead">Are some traces places, and vice versa?</p>
-            <p class="answer">A number of spatial-temporal entities could be modeled as either. For example: a dynasty, or an historical route.</p>
-            <p class="subhead">Are there "preferred names" in WHG?</p>
-            <p class="answer">No. A place record can include any number of name and language variants; in fact they are encouraged. But we ask that each record have an assigned "title," which serves principally as a headword in lists. The title of records in our union index is the title of its "seed" record.</p>
-            <p class="subhead">Does WHG suport multiple languages?</p>
-            <p class="answer">The name variants found in WHG are of numerous languages and scripts. Unfortunately, to date most of the contributed names do not arrive tagged with language-script codes. Separately, the <a href="https://www.w3.org/standards/webdesign/i18n" target="_blank">internationalization {% fontawesome_icon 'external-link' %}</a> of the WHG site is a high priority for a future phase of work.</p>
-            <p class="subhead">How and why does WHG use modern country boundaries?</p>
-            <p class="answer">Modern country boundaries are used in WHG primarily to filter queries and spatially constrain reconciliation results. Country codes are included in place records for this purpose and do not reflect a given place's historical "containment" in, or association with, administrative areas at any given time in the past.</p>
-            <p class="subhead">What is the WHG vocabulary of place types?</p>
-            <p class="answer">We have adopted <a href="https://github.com/LinkedPasts/linked-places/blob/master/feature-types-AAT_20210118.tsv" target="_blank">a set of 163 place type concepts {% fontawesome_icon 'external-link' %}</a> drwan from the approximately 900 contained in the <a href="http://www.getty.edu/research/tools/vocabularies/aat/" target="_blank">Getty Art & Achitecture Thesuarus {% fontawesome_icon 'external-link' %}</a>. Our focus in selecting these was on settlements (inhabited places), administrative divisions, sites, and natural features. Place types are an important facet for search and filtering of place records.</p>
-            <p class="subhead">Can contributions include urban-scale features?</p>
-            <p class="answer">We are not actively soliciting urban-scale place data (e.g. buildings, streets, monuments, plazas), but recognize there is growing interest in systems to manage such information.</p>
-          </div>
-        </div>
+        <div id="" class="tute-section">
+          <p class="subhead">What now?</p>
+          <p class="answer">WHG v2.1 includes several significant improvements to v1, but development of the platform is still at a relatively early stage.
+	          The highest immediate priority is adding significantly more historical data. Apart from adding content, several additional features are planned,
+	          and now in development towards a Verson 3 to be released in 2024. We are working ot ensure that WHG can be sustained and improved over the long term</p>
+          <p class="subhead">What is a gazetteer?</p>
+          <p class="answer">In its simplest form, a gazetteer is a list of place names. Typically, digital gazetteers  provide some level of description for each
+	          listed place, e.g. its type and geographic coordinates. Historical gazetteers include prior names and some level of temporal information.
+	          The <b>Linked Places format</b> (<a href="https://github.com/LinkedPasts/linked-places" target="_blank">spec {% fontawesome_icon 'external-link' %}</a>;
+	          <a href="{% url 'main:tute-choosing' %}">tutorial</a>) used by WHG allows us to record temporally scoped name variants, coordinates, place types,
+	          and relations with other places, as well as related descriptions and depictions.</p>
+          <p class="subhead">Who uses historical gazetteers?</p>
+          <p class="answer">Historical gazetteers are useful for anyone concerned with the history of a place or group of places, including researchers,
+	          teachers, students, history buffs, and geneaologists. They help connect our present to our past.</p>
+          <p class="subhead">What is a place?</p>
+          <p class="answer">The term has multiple related meanings. A few we like: (i) one answer to a where question, (ii) a setting for events and activity,
+	          (iii) "...an object resulting from a shared identification of a location. As an object, it may become a part of a network and participate in events"
+	          (<a href="https://asistdl.onlinelibrary.wiley.com/doi/pdf/10.1002/asi.24194" target="_blank">Purves, Winter & Kuhn 2019</a>
+	          {% fontawesome_icon 'external-link' %}). Attributes of places include names, locations, and types&mdash;all of which routinely change over time.</p>
+          <p class="subhead">What is a place in WHG?</p>
+          <p class="answer">A place record represents one or more attestations of a place found in historical sources or in modern gazetteers and name authorities.
+	          Due to our use of <a href="{% url 'main:tute-choosing' %}">Linked Places format</a>, a WHG place record may include any number of names, types,
+	          locations (geometry), relations, descriptions, depictions, and links with other records. The entire record can be temporally scoped with a
+	          "when" attribute, as can any individual name, type, geometry or relation.</p>
+          <p class="subhead">What is the geographic and temporal scope of WHG?</p>
+          <p class="answer">The geographic scope is global, and the temporal scope is roughly the span of written history.</p>
+          <p class="subhead">Are there "preferred names" in WHG?</p>
+          <p class="answer">No. A place record can include any number of name and language variants; in fact they are encouraged. But we ask that each record
+	          have an assigned "title," which serves principally as a headword in lists. The title of records in our union index is the title of its "seed" record.</p>
+          <p class="subhead">Does WHG suport multiple languages?</p>
+          <p class="answer">The name variants found in WHG are of numerous languages and scripts. Unfortunately, to date most of the contributed names do not
+	          arrive tagged with language-script codes. Separately, the
+	          <a href="https://www.w3.org/standards/webdesign/i18n" target="_blank">internationalization {% fontawesome_icon 'external-link' %}</a> of the WHG site
+	          is a high priority for a future phase of work.</p>
+          <p class="subhead">How and why does WHG use modern country boundaries?</p>
+          <p class="answer">Modern country boundaries are used in WHG primarily to filter queries and spatially constrain reconciliation results. Country codes
+	          are included in place records for this purpose and do not reflect a given place's historical "containment" in, or association with,
+	          administrative areas at any given time in the past.</p>
+          <p class="subhead">What is the WHG vocabulary of place types?</p>
+          <p class="answer">We have adopted <a href="https://github.com/LinkedPasts/linked-places-format/blob/main/feature-types-AAT_20230609.tsv" target="_blank">
+	          a set of 179 place type concepts {% fontawesome_icon 'external-link' %}</a> drwan from the approximately 900 contained in the
+	          <a href="http://www.getty.edu/research/tools/vocabularies/aat/" target="_blank">Getty Art & Achitecture Thesuarus {% fontawesome_icon 'external-link' %}</a>.
+	          Our focus in selecting these was on settlements (inhabited places), administrative divisions, sites, and natural features. Place types are an important
+	          facet for search, filtering, and reconciliation of place records.</p>
+          <p class="subhead">Can contributions include urban-scale features?</p>
+          <p class="answer">We are not actively soliciting urban-scale place data (e.g. buildings, streets, monuments, plazas) at this time, but recognize there
+	          is growing interest in systems to manage such information.</p>
+        </div> <!-- .tute-section -->
+      </div> <!-- guide_faq -->
+      </div> <!-- tab_content-->
     </div> <!-- guide_content -->
-    </div> <!-- container -->
-    <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  </div> <!-- container -->
+  <div class="modal fade hidden" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -292,13 +427,14 @@
       </div>
     </div>
   </div>
-  <script type="text/javascript">
+
+	<script type="text/javascript">
     $(function(){
       $('.nav-pills a[href="#pills-why"]').tab('show')
     })
     $(".popimg").on("click", function() {
+      console.log('popimg')
       imagelink = $(".popimg img").attr('src')
-      <!--console.log($(this).attr('src')-->
       $('#imagepreview').attr('src', imagelink); 
       $('#imagemodal').modal('show');
     });
