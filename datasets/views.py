@@ -2234,32 +2234,78 @@ class DataListsView(LoginRequiredMixin, ListView):
 
   def get_queryset(self, **kwargs):
     me = self.request.user
-    whgteam = me.is_superuser or 'whg_team' in [g.name for g in me.groups.all()]
-    teaching = 'teaching' in [g.name for g in me.groups.all()]
+    is_whg_team = 'whg_team' in [g.name for g in me.groups.all()]
 
-    if self.request.path == reverse('data-datasets'):
-      idlist = [obj.id for obj in Dataset.objects.all() if me in obj.owners or
-                   me in obj.collaborators or me.is_superuser]
-      dslist = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
-      return dslist
-    elif self.request.path == reverse('data-collections'):
-      list = Collection.objects.filter(
-        Q(owner=me) |
-        Q(collabs__user=me) |
-        Q(collabs__user__groups__name='whg_team') |
-        Q(collabs__user__groups__name='whg_admins')
-      ).distinct().order_by('-created')
-      return list
-    elif self.request.path == reverse('data-areas'):
-      study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
-      list = Area.objects.all().filter(type__in=study_areas).order_by('-id') if whgteam else \
-        Area.objects.all().filter(type__in=study_areas, owner=me).order_by('-created')
-      return list
+    if self.request.path == reverse('data-datasets') or self.request.path == reverse('data-collections'):
+      return self._get_data_or_collections_queryset(me, is_whg_team)
+    elif self.request.path in [reverse('data-areas'), reverse('data-resources')]:
+      return self._get_areas_or_resources_queryset(me, is_whg_team)
+
+  def _get_data_or_collections_queryset(self, user, is_whg_team):
+    if is_whg_team:
+      if self.request.path == reverse('data-datasets'):
+        return Dataset.objects.all().order_by('-create_date')
+      else:
+        return Collection.objects.all().order_by('-created')
     else:
-      print('resources...whgteam?', whgteam)
-      list = Resource.objects.all().order_by('create_date') if whgteam or teaching \
-        else Resource.objects.all().filter(owner=me).order_by('create_date')
-      return list
+      if self.request.path == reverse('data-datasets'):
+        return Dataset.objects.filter(
+          Q(owner=user) |
+          Q(collabs__user_id=user.id)
+        ).distinct().order_by('-create_date')
+      else:
+        return Collection.objects.filter(
+          Q(owner=user) |
+          Q(collabs__user_id=user.id)
+        ).distinct().order_by('-created')
+
+  # def _get_data_or_collections_queryset(self, user, is_whg_team):
+  #   if self.request.path == reverse('data-datasets'):
+  #     return Dataset.objects.filter(
+  #       Q(owner=user) |
+  #       Q(collabs__user_id=user.id) |
+  #       Q(owner__groups__name='whg_team')
+  #     ).distinct().order_by('-create_date')
+  #   else:
+  #     return Collection.objects.filter(
+  #       Q(owner=user) |
+  #       Q(collabs__user_id=user.id) |
+  #       Q(owner__groups__name='whg_team')
+  #     ).distinct().order_by('-created')
+
+  def _get_areas_or_resources_queryset(self, user, is_whg_team):
+    return (Area.objects.filter(Q(owner=user) | Q(owner__groups__name='whg_team')) if self.request.path == reverse('data-areas')
+            else Resource.objects.filter(Q(owner=user) | Q(owner__groups__name='whg_team'))).distinct().order_by(
+      '-created')
+
+  # def get_queryset(self, **kwargs):
+  #   me = self.request.user
+  #   whgteam = me.is_superuser or 'whg_team' in [g.name for g in me.groups.all()]
+  #   teaching = 'teaching' in [g.name for g in me.groups.all()]
+  #
+  #   if self.request.path == reverse('data-datasets'):
+  #     idlist = [obj.id for obj in Dataset.objects.all() if me in obj.owners or
+  #                  me in obj.collaborators or me.is_superuser]
+  #     dslist = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
+  #     return dslist
+  #   elif self.request.path == reverse('data-collections'):
+  #     list = Collection.objects.filter(
+  #       Q(owner=me) |
+  #       Q(collabs__user=me) |
+  #       Q(collabs__user__groups__name='whg_team') |
+  #       Q(collabs__user__groups__name='whg_admins')
+  #     ).distinct().order_by('-created')
+  #     return list
+  #   elif self.request.path == reverse('data-areas'):
+  #     study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
+  #     list = Area.objects.all().filter(type__in=study_areas).order_by('-id') if whgteam else \
+  #       Area.objects.all().filter(type__in=study_areas, owner=me).order_by('-created')
+  #     return list
+  #   else:
+  #     print('resources...whgteam?', whgteam)
+  #     list = Resource.objects.all().order_by('create_date') if whgteam or teaching \
+  #       else Resource.objects.all().filter(owner=me).order_by('create_date')
+  #     return list
 
   def get_context_data(self, *args, **kwargs):
     me = self.request.user

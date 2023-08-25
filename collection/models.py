@@ -81,6 +81,11 @@ class Collection(models.Model):
     team_ids = self.collabs.values_list('user_id', flat=True)
     return User.objects.filter(id__in=team_ids) | User.objects.filter(groups__name='whg_team')
 
+  # @property
+  # def collaborators(self):
+  #   team_ids = self.collabs.values_list('user_id', flat=True)
+  #   return User.objects.filter(id__in=team_ids) | User.objects.filter(groups__name='whg_team')
+
   @property
   def owners(self):
     owner_ids = list(self.collabs.filter(role='owner').values_list('user_id', flat=True))

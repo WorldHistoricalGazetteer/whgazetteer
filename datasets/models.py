@@ -84,12 +84,17 @@ class Dataset(models.Model):
 
   @property
   def collaborators(self):
-    ## includes roles: member, owner
-    team = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
-    # members of whg_team group are collaborators on all datasets
-    # teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team') | self.owner
-    teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team')
-    return teamusers
+    team_ids = self.collabs.values_list('user_id', flat=True)
+    return User.objects.filter(id__in=team_ids) | User.objects.filter(groups__name='whg_team')
+
+  # @property
+  # def collaborators(self):
+  #   ## includes roles: member, owner
+  #   team = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
+  #   # members of whg_team group are collaborators on all datasets
+  #   # teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team') | self.owner
+  #   teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team')
+  #   return teamusers
 
   @property
   def dl_est(self):
