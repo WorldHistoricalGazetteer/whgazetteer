@@ -284,7 +284,7 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
     html_content_success="<h3>Greetings, "+username+"</h3> <p>Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed. "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
       "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
 
-  subject, from_email = 'WHG reconciliation result', 'whg@kgeographer.org'
+  subject, from_email = 'WHG reconciliation result', 'whg@pitt.edu'
   conn = mail.get_connection(
     host=settings.EMAIL_HOST,
     user=settings.EMAIL_HOST_USER,

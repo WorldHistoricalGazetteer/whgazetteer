@@ -750,7 +750,7 @@ def ds_recon(request, pk):
       print('Celery is down :^(')
       emailer('Celery is down :^(',
               'if not celeryUp() -- look into it, bub!',
-              'whg@kgeographer.org',
+              'whg@pitt.edu',
               ['karl@kgeographer.org'])
       messages.add_message(request, messages.INFO, """Sorry! WHG reconciliation services appears to be down. 
         The system administrator has been notified.""")
@@ -780,8 +780,8 @@ def ds_recon(request, pk):
       messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appear to be down. The system administrator has been notified.<br/>"+ str(sys.exc_info()))
       emailer('WHG recon task failed',
               'a reconciliation task has failed for dataset #'+ds.id+', w/error: \n' +str(sys.exc_info())+'\n\n',
-              'whg@kgeographer.org',
-              'karl@kgeographer.org')
+              'whg@pitt.edu',
+              'whgadmin@kgeographer.org')
 
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
 
@@ -1889,7 +1889,7 @@ def ds_insert_lpf(request, pk):
             ' dataset failed, very sorry about that!'+\
             '\nThe likely cause was: '+str(errors)+'\n\n'+\
             "If you can, fix the cause. If not, please respond to this email and we will get back to you soon.\n\nRegards,\nThe WHG Team"
-      emailer(subj,msg,'whg@kgeographer.org',[user.email, 'whgadmin@kgeographer.com'])
+      emailer(subj,msg,'whg@pitt.edu',[user.email, 'whgadmin@kgeographer.com'])
 
       # return message to 500.html
       # messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')

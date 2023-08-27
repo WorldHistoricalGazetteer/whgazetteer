@@ -109,7 +109,7 @@ def contactView(request):
             username = form.cleaned_data['username'] # hidden input
             subject = form.cleaned_data['subject']
             from_email = form.cleaned_data['from_email']
-            sender_email = 'noreply@kgeographer.org'
+            sender_email = 'whg@pitt.edu'
             message = name +' ('+username+'; '+from_email+'), on the subject of '+subject+' says: \n\n'+form.cleaned_data['message']
             subject_reply = "WHG message received"
             message_reply = '\nWe received your message concerning "'+subject+'" and will respond soon.\n\n regards,\nThe WHG project team'
