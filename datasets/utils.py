@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.core import mail
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render #, redirect
 from django.views.generic import View

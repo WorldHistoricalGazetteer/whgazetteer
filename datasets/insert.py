@@ -3,6 +3,7 @@
 import csv, json, os, re, sys
 import pandas as pd
 import numpy as np
+import traceback
 import warnings
 from itertools import zip_longest
 
@@ -17,7 +18,7 @@ from .exceptions import DelimInsertError, DataAlreadyProcessedError
 from .models import Dataset
 from places.models import *
 from datasets.utils import aliasIt, aat_lookup, ccodesFromGeom, \
-  makeCoords, parse_wkt, parsedates_tsv, parsedates_lpf
+  emailer, makeCoords, parse_wkt, parsedates_tsv, parsedates_lpf
 from places.models import *
 
 # 'lugares_20.jsonld','lugares_20_broken.jsonld'
@@ -78,6 +79,7 @@ def process_variants(row, newpl):
       if row.get('variants', '') != '' else []
   name_objects = []  # gather variants to be written
   error_msgs = []  # gather error messages
+  title_uri = None if pd.isnull(row.get('title_uri')) else row.get('title_uri'),
   if variants:
     for v in variants:
       try:
@@ -89,15 +91,17 @@ def process_variants(row, newpl):
           toponym=v.strip(),
           jsonb={"toponym": v.strip(),
                  "citations": [
-                   {"id": row['title_uri'],
+                   {"id": title_uri,
                     "label": row['title_source']}
                  ]})
         if haslang:
           new_name.jsonb['lang'] = haslang.group(1)
 
         name_objects.append(new_name)
-      except:
-        error_msgs.append(f"Error writing variant '{v}' for place <b>{row['id']}</b>: <b>{row['toponym']}</b>")
+      except Exception as e:
+        full_trace = traceback.format_exc()
+        print("Full trace:", full_trace)
+        error_msgs.append(f"Error writing variant '{v}' for place <b>{row['id']}</b>: <b>{row['title']}</b>. Details: {e}")
 
   if error_msgs:  # if there are any error messages
     raise DelimInsertError("; ".join(error_msgs))  # raise an exception with all error messages joined

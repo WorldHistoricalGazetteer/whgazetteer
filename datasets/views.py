@@ -2711,6 +2711,9 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
       except DelimValidationError as e:
         error_list = e.args[0]
 
+        if isinstance(error_list, str):
+          error_list = [{"row": "Unknown", "error": error_list}]
+
         # Construct the error message for the user
         if len(error_list) > 1:
           message = "<b>Several errors were found in your file; the first of these are</b>:<ul class='no-indent'>"
@@ -2740,12 +2743,16 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
       except DelimInsertError as e:
         error_list = e.args[0]
 
+        if isinstance(error_list, str):
+          error_list = [{"row": "Unknown", "error": error_list}]
+
         # Construct the error message for the user
         if len(error_list) > 1:
           message = "<b>Several errors occurred during insertion; the first of these are</b>:<ul class='no-indent'>"
         else:
           message = "<b>Errors occurred during insertion</b>:<ul class='no-indent'>"
 
+        print('error_list', error_list)
         for err in error_list:
           row = err['row']
           reason = err['error']
