@@ -179,10 +179,13 @@ def indexMatch(pid, hit_pid=None):
       - name variants added to winner's searchy[] and suggest.item[] lists
 """
 def indexMultiMatch(pid, matchlist):
+  # matchlist is [{'whg_id': , 'pid': , 'score': ,'links': }]
   print('indexMultiMatch(): pid '+str(pid)+' matches '+str(matchlist))
-  from elasticsearch7 import Elasticsearch, RequestError
+  from elasticsearch7 import RequestError
   es = settings.ES_CONN
   idx='whg'
+
+  # create index doc for new record
   place = Place.objects.get(id=pid)
   from elastic.es_utils import makeDoc
   new_obj = makeDoc(place)
@@ -191,25 +194,30 @@ def indexMultiMatch(pid, matchlist):
   addnames = []
   addkids = [str(pid)] # pid will also be the new record's _id
 
-  # max score is winner
+  """ 
+  - all matchlist items are index 'parent' records,
+    possibly with multiple children already
+  - winner is existing index hit with max(score)
+  - any other matches are to become children of winner
+  - this is indexMultuMatch() so >=1 demoted
+  """
   winner = max(matchlist, key=lambda x: x['score']) # 14158663
-  # this is multimatch so there is at least one demoted (list of whg_ids)
-  demoted = [str(i['whg_id']) for i in matchlist if not (i['whg_id'] == winner['whg_id'])] # ['14090523']
+  demoted = [str(i['whg_id']) for i in matchlist
+             if not (i['whg_id'] == winner['whg_id'])] # ['14090523']
 
-  # complete doc for new record
+  # add winner as parent to 'new_obj{}'
   new_obj['relation'] = {"name": "child", "parent": winner['whg_id']}
-  # copy its toponyms into addnames[] for adding to winner later
+  # gather toponyms for adding to winner's 'searchy' field later
   for n in new_obj['names']:
     addnames.append(n['toponym'])
   if place.title not in addnames:
     addnames.append(place.title)
 
-  # generate script used to update winner w/kids and names
+  # script to update winner w/kids and names
   # from new record and any kids of 'other' matched parents
   def q_updatewinner(addkids, addnames):
     return {"script":{
       "source": """ctx._source.children.addAll(params.newkids);
-      ctx._source.suggest.input.addAll(params.names);
       ctx._source.searchy.addAll(params.names);
       """,
       "lang": "painless",
@@ -251,7 +259,9 @@ def indexMultiMatch(pid, matchlist):
     # update the 'winner' parent
     q=q_updatewinner(list(set(addkids)), list(set(addnames))) # ensure only unique
     try:
-      es.update(idx, winner['whg_id'], body=q)
+      # es8 on server needs explicit parameters
+      # es.update(idx, winner['whg_id'], body=q)
+      es.update(index=idx, id=winner['whg_id'], body=q)
     except RequestError as rq:
       print('q_updatewinner failed (whg_id)', winner['whg_id'])
       print('Error: ', rq.error, rq.info)
@@ -266,7 +276,7 @@ def indexMultiMatch(pid, matchlist):
 
     # zap the demoted, reindex with same _id and modified doc (newsrcd)
     try:
-      es.delete('whg', _id)
+      es.delete(index='whg', id=_id)
       es.index(index='whg', id=_id, body=newsrcd, routing=1)
     except RequestError as rq:
       print('reindex failed (demoted)',d)
@@ -529,9 +539,6 @@ def review(request, pk, tid, passnum):
                             'pid':hits[x]['json']['pid'],
                             'score':hits[x]['json']['score'],
                             'links': links_count})
-          # TODO: informational lookup on whg index?
-          # elif task.task_name == 'align_whg':
-          #   print('align_whg (non-accessioning) DOING NOTHING (YET)')
         # in any case, flag hit as reviewed...
         hitobj = get_object_or_404(Hit, id=hit.id)
         hitobj.reviewed = True

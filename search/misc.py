@@ -13,7 +13,7 @@ def init_geotest():
     mappings = codecs.open('data/elastic/mappings/mappings_geo2.json', 'r', 'utf8').read()
     
     try:
-        es.indices.delete(idx)
+        es.indices.delete(index=idx)
     except Exception as ex:
         print(ex)
     try:

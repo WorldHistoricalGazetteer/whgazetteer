@@ -35,7 +35,7 @@ except RequestError as rq:
 
 # restore 14090523 after task delete
 try:
-  es.delete('whg', '14090523')
+  es.delete(index='whg', id='14090523')
   es.index(index='whg', id='14090523', body=srcd, routing=1)
 except RequestError as rq:
   print('reindex failed (demoted)')
@@ -160,7 +160,7 @@ def demoteParents(demoted, winner_id):
     # first update the 'winner' parent
     q=q_updatewinner(kids, names)
     try:
-      es.update(idx,winner_id,body=q)
+      es.update(index=idx, id=winner_id, body=q)
     except RequestError as rq:
       print('q_updatewinner failed (winner_id)',winner_id)
       print('Error: ', rq.error, rq.info)
@@ -175,7 +175,7 @@ def demoteParents(demoted, winner_id):
       newsrcd.pop('whg_id')
     # zap the old demoted, index the modified
     try:      
-      es.delete('whg', d)
+      es.delete(index='whg', id=d)
       es.index(index='whg',id=d,body=newsrcd,routing=1)
     except RequestError as rq:
       print('reindex failed (demoted)',d)

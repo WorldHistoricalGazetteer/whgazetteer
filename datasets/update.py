@@ -220,7 +220,7 @@ def deleteFromIndex(pids):
             print('aw shit',sys.exit(sys.exc_info()))
         # child's presence in parent removed, add to delthese[]
         delthese.append(pid)
-    es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
+    es.delete_by_query(index=idx, body={"query": {"terms": {"place_id": delthese}}})
     print('deleted '+len(delthese)+': '+str(delthese))
 
 # ES ACTIONS (database now current)

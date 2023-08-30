@@ -123,7 +123,7 @@ def init():
   # zap dataset from index
   q_del = {"query": {"match": {"dataset": dataset}}}
   try:
-    res=es.delete_by_query(idx,q_del)
+    res=es.delete_by_query(index=idx, body=q_del)
     print(str(res['deleted'])+' docs deleted')
   except Exception as ex:
     print(ex)

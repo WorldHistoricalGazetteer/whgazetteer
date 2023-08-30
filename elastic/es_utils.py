@@ -398,7 +398,7 @@ def replaceInIndex(es,idx,pids):
         newparent['relation']={"name":"parent"}
 
         # out with the old
-        es.delete_by_query(idx,body=esq_id(doc['_id']))
+        es.delete_by_query(index=idx, body=esq_id(doc['_id']))
         # in with the new
         es.index(index=idx,id=doc['_id'],
                  routing=1,body=json.dumps(newparent))
@@ -556,7 +556,7 @@ def removePlacesFromIndex(es, idx, pids):
     else:
       print(str(pid) + ' not in index for some reason, passed')
       pass
-  es.delete_by_query(idx, body={"query": {"terms": {"place_id": delthese}}})
+  es.delete_by_query(index=idx, body={"query": {"terms": {"place_id": delthese}}})
   print('deleted '+str(len(delthese))+': '+str(delthese))
   msg = 'deleted '+str(len(delthese))+': '+str(delthese)
   return JsonResponse(msg, safe=False)
@@ -647,7 +647,7 @@ def esInit(idx):
   # zap existing if exists, re-create
   if confirm(prompt='Zap index '+idx+'?', resp=False):
     try:
-      es.indices.delete(idx)
+      es.indices.delete(index=idx)
     except Exception as ex:
       print(ex)
     try:
