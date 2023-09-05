@@ -6,26 +6,27 @@ from datasets.views import emailer
 
 from datetime import timedelta
 
-from django.core.mail import send_mail
 send_mail('Got mail?', 'wtaf?', 'whg@pitt.edu', ['karl@kgeographer.org'], fail_silently=False)
 
 def send_maintenance_email():
 	# Fetch recent users.
 	recent_users = User.objects.filter(last_login__gte=timezone.now() - timedelta(days=30))
 	test_users = User.objects.filter(id=1)
-	down_date = '3 September 2023'
-	# for user in recent_users:
-	for user in test_users:
+	down_date = '3 September'
+	for user in recent_users:
+	# for user in test_users:
 		send_mail(
 			'WHG Scheduled Maintenance Notification',
-			'Dear {},\n\nThe World Historical Gazetteer site will be undergoing scheduled maintenance on {}, during '
+			'Dear {},\n\n'
+			'Because you have logged in to WHG within the last month or so, we are letting you know that'
+			'the World Historical Gazetteer site will be undergoing scheduled maintenance on {}, during '
 			'the following time window:\n'
-				'  CEST: 09:00-12:00 \n'
-				'  London: 08:00-11:00 \n'
+				'  CEST: 15:00-19:00 \n'
+				'  London: 14:00-19:00 \n'
 				'  UTC: 07:00-10:00 \n'
-				'  EDT (US): 03:00-06:00 \n'
-				'  Tokyo: 16:00-19:00 \n'
-				'  Beijing: 15:00-18:00 \n\n'
+				'  EDT (US): 09:00-13:00 \n'
+				'  Tokyo: 22:00-02:00 Mon\n'
+				'  Beijing: 21:00-01:00 Mon\n\n'
 			'The site might be temporarily unavailable during this period.\n\n'
 			'Thank you for your understanding.'.format(user.username, down_date),
 			'whg@pitt.edu',
