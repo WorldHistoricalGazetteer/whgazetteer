@@ -2195,7 +2195,7 @@ def ds_insert_tsv(request, pk):
       print('insert_errors', insert_errors)
       # print('rows,linked,links:', countrows, countlinked, total_links)
     except:
-      print('tsv insert failed', newpl, sys.exc_info())
+      print('tsv insert failed', sys.exc_info())
       # drop the (empty) dataset if insert wasn't complete
       ds.delete()
       # email to user, admin

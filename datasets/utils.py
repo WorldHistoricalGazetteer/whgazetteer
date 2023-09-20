@@ -620,7 +620,7 @@ def validate_tsv(fn, ext):
 		result['count'] = rpt['stats']['rows']  # count
 		print('rpt errors', rpt['errors'])
 
-	req = ['id', 'title', 'title_source', 'start']
+	req = ['id', 'title', 'title_source']
 	missing = list(set(req) - set(header))
 
 	# filter harmless errors
