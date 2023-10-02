@@ -2276,51 +2276,6 @@ class DataListsView(LoginRequiredMixin, ListView):
     else:
       return queryset.filter(owner=user).distinct().order_by('-created')
 
-  # def get_queryset(self, **kwargs):
-  #   me = self.request.user
-  #   is_whg_team = 'whg_team' in [g.name for g in me.groups.all()]
-  #
-  #   if self.request.path == reverse('data-datasets') or self.request.path == reverse('data-collections'):
-  #     return self._get_data_or_collections_queryset(me, is_whg_team)
-  #   elif self.request.path in [reverse('data-areas'), reverse('data-resources')]:
-  #     return self._get_areas_or_resources_queryset(me, is_whg_team)
-  #
-  # def _get_data_or_collections_queryset(self, user, is_whg_team):
-  #   if is_whg_team:
-  #     if self.request.path == reverse('data-datasets'):
-  #       return Dataset.objects.all().order_by('-create_date')
-  #     else:
-  #       return Collection.objects.all().order_by('-created')
-  #   else:
-  #     if self.request.path == reverse('data-datasets'):
-  #       return Dataset.objects.filter(
-  #         Q(owner=user) |
-  #         Q(collabs__user_id=user.id)
-  #       ).distinct().order_by('-create_date')
-  #     else:
-  #       return Collection.objects.filter(
-  #         Q(owner=user) |
-  #         Q(collabs__user_id=user.id)
-  #       ).distinct().order_by('-created')
-  #
-  # def _get_areas_or_resources_queryset(self, user, is_whg_team):
-  #   is_whg_team_member = user.groups.filter(name='whg_team').exists()
-  #
-  #   if self.request.path == reverse('data-areas'):
-  #     queryset = Area.objects
-  #   else:
-  #     queryset = Resource.objects
-  #
-  #   if is_whg_team_member:
-  #     return queryset.all().distinct().order_by('-created')
-  #   else:
-  #     return queryset.filter(owner=user).distinct().order_by('-created')
-
-  # def _get_areas_or_resources_queryset(self, user, is_whg_team):
-  #   return (Area.objects.filter(Q(owner=user) | Q(owner__groups__name='whg_team'))
-  #           if self.request.path == reverse('data-areas')
-  #     else Resource.objects.filter(Q(owner=user) | Q(owner__groups__name='whg_team'))).distinct().order_by('-created')
-
   def get_context_data(self, *args, **kwargs):
     me = self.request.user
     context = super(DataListsView, self).get_context_data(*args, **kwargs)
