@@ -1116,9 +1116,8 @@ def status_emailer(ds, task_name):
       in World Historical Gazetteer. Where we already had one or more records for a place, yours is now linked to it/them.\n \
       For those we had no attestation for, yours is the new 'seed'. In any case, *all* your records are now accessible via \
       the index search, database search, and API.\nBest regards,\nThe WHG Team"
-			html_content = "<h4>Congratulations and thank you!</h4><p>Your <b>"+ds.title+"</b> dataset is now fully indexed \
-      in World Historical Gazetteer. Where we already had one or more records for a place, yours is now linked to it/them.</p> \
-      <p>For those we had no attestation for, yours is the new 'seed'. In any case, <i>all</i> your records are now accessible via \ \
+			html_content = "<h4>Congratulations and thank you!</h4><p>Your <b>"+ds.title+"</b> dataset is now fully indexed \ in World Historical Gazetteer. Where we already had one or more records for a place, yours is now linked to it/them.</p> \
+      <p>For those we had no attestation for, yours is the new 'seed'. In any case, <i>all</i> your records are now accessible via \
       the index search, database search, and API.</p><p>Best regards,</p<p><i>The WHG Team</i></p>"
 	except:
 		print('status_emailer() failed on dsid', ds.id, 'how come?')
