@@ -1359,7 +1359,8 @@ def align_idx(pk, *args, **kwargs):
           'titles': [par['title']],
           'countries': par['countries'],
           'geoms': list(uniq_geom(par['geoms'])),
-          'links': par['links'],
+          'links': par.get('links') or [],
+          # 'links': par['links'],
           'sources': [
             {'dslabel': par['dataset'], 
              'pid': par['pid'],
@@ -1377,7 +1378,9 @@ def align_idx(pk, *args, **kwargs):
           
           # unnest
           hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
-          hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
+          for k in kids:
+            hitobj['links'].extend(k.get('links') or [])
+          # hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
           
           # add kids to parent in sources
           hitobj['sources'].extend(

@@ -679,64 +679,67 @@
     })
   }
   //
-  heat = function(dataset) {
-    console.log('heat()',dataset)
-    ne_global.getMapboxMap().addLayer({
-    "id": "heat_active",
-    "type": "heatmap",
-    "source": dataset,
-    "maxzoom": 9,
-    "paint": {
-      // Increase the heatmap weight based on frequency and property magnitude
-    "heatmap-weight": [
-      "interpolate",
-      ["linear"],
-      ["get", "mag"],
-      0, 0,
-      6, 1
-    ],
-    // Increase the heatmap color weight weight by zoom level
-    // heatmap-intensity is a multiplier on top of heatmap-weight
-    "heatmap-intensity": [
-      "interpolate",
-      ["linear"],
-      ["zoom"],
-      0, 1,
-      9, 3
-    ],
-    // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-    // Begin color ramp at 0-stop with a 0-transparancy color
-    // to create a blur-like effect.
-    "heatmap-color": [
-      "interpolate",
-      ["linear"],
-      ["heatmap-density"],
-      0, "rgba(33,102,172,0)",
-      0.2, "rgb(103,169,207)",
-      0.4, "rgb(209,229,240)",
-      0.6, "rgb(253,219,199)",
-      0.8, "rgb(239,138,98)",
-      1, "rgb(178,24,43)"
-    ],
-    // Adjust the heatmap radius by zoom level
-    "heatmap-radius": [
-      "interpolate",
-      ["linear"],
-      ["zoom"],
-      0, 2,
-      9, 20
-    ],
-    // Transition from heatmap to circle layer by zoom level
-    "heatmap-opacity": [
-      "interpolate",
-      ["linear"],
-      ["zoom"],
-      7, 1,
-      9, 0
-    ],
-    }
-  });
-  }
+  // DEPRECATED, no heat here
+  {#heat = function(dataset) {#}
+  {#  console.log('heat()',dataset)#}
+  {#  ne_global.getMapboxMap().addLayer({#}
+  {#  "id": "heat_active",#}
+  {#  "type": "heatmap",#}
+  {#  "source": dataset,#}
+  {#  "maxzoom": 9,#}
+  {#  "paint": {#}
+  {#    // Increase the heatmap weight based on frequency and property magnitude#}
+  {#  "heatmap-weight": [#}
+  {#    "interpolate",#}
+  {#    ["linear"],#}
+  {#    ["get", "mag"],#}
+  {#    0, 0,#}
+  {#    6, 1#}
+  {#  ],#}
+  {#  // Increase the heatmap color weight weight by zoom level#}
+  {#  // heatmap-intensity is a multiplier on top of heatmap-weight#}
+  {#  "heatmap-intensity": [#}
+  {#    "interpolate",#}
+  {#    ["linear"],#}
+  {#    ["zoom"],#}
+  {#    0, 1,#}
+  {#    9, 3#}
+  {#  ],#}
+  {#  // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).#}
+  {#  // Begin color ramp at 0-stop with a 0-transparancy color#}
+  {#  // to create a blur-like effect.#}
+  {#  "heatmap-color": [#}
+  {#    "interpolate",#}
+  {#    ["linear"],#}
+  {#    ["heatmap-density"],#}
+  {#    0, "rgba(33,102,172,0)",#}
+  {#    0.2, "rgb(103,169,207)",#}
+  {#    0.4, "rgb(209,229,240)",#}
+  {#    0.6, "rgb(253,219,199)",#}
+  {#    0.8, "rgb(239,138,98)",#}
+  {#    1, "rgb(178,24,43)"#}
+  {#  ],#}
+  {#  // Adjust the heatmap radius by zoom level#}
+  {#  "heatmap-radius": [#}
+  {#    "interpolate",#}
+  {#    ["linear"],#}
+  {#    ["zoom"],#}
+  {#    0, 2,#}
+  {#    9, 20#}
+  {#  ],#}
+  {#  // Transition from heatmap to circle layer by zoom level#}
+  {#  "heatmap-opacity": [#}
+  {#    "interpolate",#}
+  {#    ["linear"],#}
+  {#    ["zoom"],#}
+  {#    7, 1,#}
+  {#    9, 0#}
+  {#  ],#}
+  {#  }#}
+  {# });#}
+  {# }#}
+  {##}
+
   //
   // initializes map
   addEventListener('map:init', function (e) {
@@ -897,11 +900,11 @@
     }
   }, false); <!-- addEventListener() -->
 
-  cleanJson = function(text) {
-    z=text.replace(/'/g,'\\"')
-    y=z.replace(/point/,'Point')
-    return JSON.parse(JSON.parse(y))
-  }
+  {#cleanJson = function(text) {#}
+  {#  z=text.replace(/'/g,'\\"')#}
+  {#  y=z.replace(/point/,'Point')#}
+  {#  return JSON.parse(JSON.parse(y))#}
+  {# }#}
 
   styles_bbox = {
     "MultiPolygon": {
@@ -1243,7 +1246,8 @@
 		{#console.log('sug', sug)#}
     // this is count of children[]; add 1 to include self
     linkcount = parseInt(sug['linkcount']) +1
-    attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
+    attestations = sug['ds'] ? '' : ' <i>' + linkcount +
+		    (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
     vcount = sug['variants'].length
     variants = vcount > 0 ? sug['variants'].sort().slice(0,6).join('; ') : ''
     ccodes = sug['ccodes'] != '' ? ' '+sug['ccodes']+' ' : ''
@@ -1254,7 +1258,8 @@
     dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
     // add dataset link if this is db search result
     if(sug['ds']){
-      dslink = dsid != 394 ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': sug['ds']['title']
+      dslink = dsid != 394 ? '<a href="#" class="ds-link" data-id='+dsid+'>'+
+		      sug['ds']['title']+'</a>': sug['ds']['title']
     } else {
       dslink = ''
     }
@@ -1277,223 +1282,229 @@
 
     return item
   }
-  // from sugLister()
-  // TODO: doesn't reach into when.timespans; Indias data malformed
-  function parseRels(rels){
-    html=''
-  timespans=[]; starts=[]; ends=[]
-    for(r in rels){
-    html += rels[r].relation
-    for(w in rels[r].when){
-    timespans.push(rels[r].when[w])
-  }}
-  reg = /(-?\d{1,4})\D?/
-  for (t in timespans){
-    // no 'in', 'earliest' or 'latest' here
-    starts.push(Number(timespans[t].start.match(reg)[1]))
-    ends.push(!!timespans[t].end ? Number(timespans[t].end.match(reg)[1]) : -1)
-  }
-  <!--console.log('starts',starts,'ends',ends)-->
-  minmax=' ['+[starts.length>0?Math.max.apply(null, starts):'-',ends.length>0?Math.max.apply(null, ends):'-']+']'
-  if(!starts.length==0 && !ends.length==0){ html += minmax}
-    return html
-  }
-  // from sugLister()
-  // TODO: doesn't reach into when.timespans; Indias data malformed
-  function parseWhen(when){
+  // DEPRECATED; from sugLister()
+  {#function parseRels(rels){#}
+  {#  html=''#}
+  {#timespans=[]; starts=[]; ends=[]#}
+  {#  for(r in rels){#}
+  {#  html += rels[r].relation#}
+  {#  for(w in rels[r].when){#}
+  {#  timespans.push(rels[r].when[w])#}
+  {# }}#}
+  {#reg = /(-?\d{1,4})\D?/#}
+  {#for (t in timespans){#}
+  {#  // no 'in', 'earliest' or 'latest' here#}
+  {#  starts.push(Number(timespans[t].start.match(reg)[1]))#}
+  {#  ends.push(!!timespans[t].end ? Number(timespans[t].end.match(reg)[1]) : -1)#}
+  {# }#}
+  {#<!--console.log('starts',starts,'ends',ends)-->#}
+  {#minmax=' ['+[starts.length>0?Math.max.apply(null, starts):'-',ends.length>0?Math.max.apply(null, ends):'-']+']'#}
+  {#if(!starts.length==0 && !ends.length==0){ html += minmax}#}
+  {#  return html#}
+  {# }#}
+
+  // DEPRECATED; from sugLister()
+  {#function parseWhen(when){#}
     {#console.log('parseWhen()',when)#}
-    html=''
-    for (w in when){
-      s = 'start' in when[w]?'start: '+when[w]['start']:'earliest: '+when[w]['earliest']
-      e = 'end' in when[w]?'end: '+when[w]['end']:'latest: '+when[w]['latest']
-      html += s +", " +e
-      html+=w==when.length-1?'':'; '
-    }
-    return html
-  }
+  {#  html=''#}
+  {#  for (w in when){#}
+  {#    s = 'start' in when[w]?'start: '+when[w]['start']:'earliest: '+when[w]['earliest']#}
+  {#    e = 'end' in when[w]?'end: '+when[w]['end']:'latest: '+when[w]['latest']#}
+  {#    html += s +", " +e#}
+  {#    html+=w==when.length-1?'':'; '#}
+  {#  }#}
+  {#  return html#}
+  {# }#}
 
   // from parserPlace() builds link for external place record
-  function url_extplace(identifier) {
-    // abbreviate links not in aliases.base_urls
-    if(identifier.startsWith('http')) {
-      let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'
-    } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '
-    }
-    return link
-  }
+  // DEPRECATED
+  {#function url_extplace(identifier) {#}
+  {#  // abbreviate links not in aliases.base_urls#}
+  {#  if(identifier.startsWith('http')) {#}
+  {#    let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')#}
+  {#    link = '<a href="'+identifier+'" target="_blank">'+tag+#}
+	{#	      '{% fontawesome_icon 'external-link' color='#336699' %},  </a>'#}
+  {#  } else {#}
+  {#  link = '<a href="" class="ext" data-target="#ext_site">'+identifier+#}
+	{#	    '&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '#}
+  {#  }#}
+  {#  return link#}
+  {# }#}
 
   // from parsePlace() builds link for external placetype record
-  function url_exttype(type) {
-    link = ' <a href="#" class="exttab" data-id='+type.identifier+
-      '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
-    return link
-  }
+  // DEPRECATED
+  {#function url_exttype(type) {#}
+  {#  link = ' <a href="#" class="exttab" data-id='+type.identifier+#}
+  {#    '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'#}
+  {#  return link#}
+  {# }#}
 
   // parse most data from a Place object
-  function parsePlace(data) {
-    window.featdata = data
+  // DEPRECATED
+  {#function parsePlace(data) {#}
+  {#  window.featdata = data#}
+	{##}
+  {#  function onlyUnique(array) {#}
+  {#    const map = new Map();#}
+  {#    const result = [];#}
+  {#    for (const item of array) {#}
+  {#      if(!map.has(item.identifier)){#}
+  {#        map.set(item.identifier, true);#}
+  {#        result.push({#}
+  {#          identifier: item.identifier,#}
+  {#          type: item.type,#}
+  {#          aug: item.aug#}
+  {#        });#}
+  {#      }#}
+  {#    }#}
+  {#    return(result)#}
+  {#  }#}
+  {#  //#}
+  {#  // TITLE#}
+  {#  descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'#}
+  {#  //#}
+  {#  // DATASET#}
+  {#  descrip+='<p><b>Dataset</b>: '+data.dataset + ' ('+data.id+')'#}
+  {#  //#}
+  {#  // NAME VARIANTS#}
+  {#  descrip+='<p class="scroll65"><b>Variants</b>: '#}
+  {#  for (n in data.names) {#}
+  {#    let name = data.names[n]#}
+  {#    descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''#}
+  {#  }#}
+  {#  //#}
+  {#  // TYPES#}
+  {#  // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]#}
+  {#  descrip+='</p><p><b>Types</b>: '#}
+  {#  typeids = ''#}
+  {#  for (t in data.types) {#}
+  {#    str = ''#}
+  {#    var type = data.types[t]#}
+  {#    if('sourceLabels' in type){#}
+  {#      srclabels = type.sourceLabels#}
+  {#      for(l in srclabels){#}
+  {#        label = srclabels[l]['label']#}
+  {#        str = label !='' ? label + '; ' : ''#}
+  {#      }#}
+  {#    } else if ('sourceLabel' in type) {#}
+  {#      str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''#}
+  {#    }#}
+  {#    if(type.label!=''){ str += url_exttype(type) + ' ' }#}
+  {#    typeids+=str#}
+  {#  }#}
+  {#  descrip += typeids.replace(/(; $)/g, "") +'</p>'#}
+	{##}
+  {#  //#}
+  {#  // LINKS#}
+  {#  //#}
+  {#  descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'#}
+  {#  close_count = added_count = related_count = 0#}
+  {#  html_close = html_added = html_related = ''#}
+  {#  if (data.links.length > 0) {#}
+  {#    links=data.links#}
+  {#    links_arr = onlyUnique(data.links)#}
+  {#    <!--console.log('distinct data.links',links_arr)-->#}
+  {#    for (l in links_arr) {#}
+  {#      if (links_arr[l].aug == true) {#}
+  {#        added_count +=1#}
+  {#        html_added += url_extplace(links_arr[l].identifier)#}
+  {#      } else {#}
+  {#        close_count +=1#}
+  {#        html_close+=url_extplace(links_arr[l].identifier)#}
+  {#      }#}
+  {#    }#}
+  {#    descrip += close_count > 0 ? html_close : 'none; '#}
+  {#    descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'#}
+  {#  } else { descrip += "<i class='small'>no links established yet</i>" }#}
+  {#  descrip += '</p>'#}
+	{##}
+  {#  //#}
+  {#  // RELATED#}
+  {#  if (data.related.length > 0) {#}
+  {#    parent='<p class="mb-0"><b>Parent(s)</b>: ';#}
+  {#    related='<p class="mb-0"><b>Related</b>: ';#}
+  {#    for (r in data.related){#}
+  {#      rel = data.related[r]#}
+  {#      if (rel.relation_type == 'gvp:broaderPartitive'){#}
+  {#        parent += '<span class="h1em">'+rel.label#}
+  {#        parent += 'when' in rel && !('timespans' in rel.when) ?#}
+  {#          ', '+rel.when.start.in+'-'+rel.when.end.in :#}
+  {#          'when' in rel && ('timespans' in rel.when) ? ', '+#}
+  {#            minmaxer(rel.when.timespans) : ''#}
+  {#        parent += '</span>; '#}
+  {#      }#}
+  {#      else {#}
+  {#        related += '<p class="h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'#}
+  {#      }#}
+  {#    }#}
+  {#    descrip+=parent.length > 39 ? parent :''#}
+  {#    descrip+=related.length > 37 ? related :''#}
+  {#  }#}
+  {#  //#}
+  {#  // DESCRIPTIONS#}
+  {#  // TODO: link description to identifier URI if present#}
+  {#  if (data.descriptions.length > 0 ) {#}
+  {#    <!--val = data.descriptions[0]['value'].substring(0,300)-->#}
+  {#    val = data.descriptions[0]['value']#}
+  {#    if(val != undefined){#}
+  {#      descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)#}
+  {#      +' ... </p>'#}
+  {#    }#}
+  {#  }#}
+  {#  //#}
+  {#  // CCODES#}
+  {#  //#}
+  {#  <!--if (data.ccodes.length > 0) {-->#}
+  {#  if (!!data.countries) {#}
+  {#    <!--console.log('data.countries',data.countries)-->#}
+  {#    descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'#}
+  {#  }#}
+  {#  //#}
+  {#  // MINMAX#}
+  {#  //#}
+  {#  if(data.minmax && data.minmax.length>0){#}
+  {#    descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]#}
+  {#  }#}
+  {#  descrip += '</div>'#}
+  {#  return descrip#}
+  {# }#}
 
-    function onlyUnique(array) {
-      const map = new Map();
-      const result = [];
-      for (const item of array) {
-        if(!map.has(item.identifier)){
-          map.set(item.identifier, true);
-          result.push({
-            identifier: item.identifier,
-            type: item.type,
-            aug: item.aug
-          });
-        }
-      }
-      return(result)
-    }
-    //
-    // TITLE
-    descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
-    //
-    // DATASET
-    descrip+='<p><b>Dataset</b>: '+data.dataset + ' ('+data.id+')'
-    //
-    // NAME VARIANTS
-    descrip+='<p class="scroll65"><b>Variants</b>: '
-    for (n in data.names) {
-      let name = data.names[n]
-      descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
-    }
-    //
-    // TYPES
-    // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
-    descrip+='</p><p><b>Types</b>: '
-    typeids = ''
-    for (t in data.types) {
-      str = ''
-      var type = data.types[t]
-      if('sourceLabels' in type){
-        srclabels = type.sourceLabels
-        for(l in srclabels){
-          label = srclabels[l]['label']
-          str = label !='' ? label + '; ' : ''
-        }
-      } else if ('sourceLabel' in type) {
-        str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
-      }
-      if(type.label!=''){ str += url_exttype(type) + ' ' }
-      typeids+=str
-    }
-    descrip += typeids.replace(/(; $)/g, "") +'</p>'
-
-    //
-    // LINKS
-    //
-    descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
-    close_count = added_count = related_count = 0
-    html_close = html_added = html_related = ''
-    if (data.links.length > 0) {
-      links=data.links
-      links_arr = onlyUnique(data.links)
-      <!--console.log('distinct data.links',links_arr)-->
-      for (l in links_arr) {
-        if (links_arr[l].aug == true) {
-          added_count +=1
-          html_added += url_extplace(links_arr[l].identifier)
-        } else {
-          close_count +=1
-          html_close+=url_extplace(links_arr[l].identifier)
-        }
-      }
-      descrip += close_count > 0 ? html_close : 'none; '
-      descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
-    } else { descrip += "<i class='small'>no links established yet</i>" }
-    descrip += '</p>'
-
-    //
-    // RELATED
-    if (data.related.length > 0) {
-      parent='<p class="mb-0"><b>Parent(s)</b>: ';
-      related='<p class="mb-0"><b>Related</b>: ';
-      for (r in data.related){
-        rel = data.related[r]
-        if (rel.relation_type == 'gvp:broaderPartitive'){
-          parent += '<span class="h1em">'+rel.label
-          parent += 'when' in rel && !('timespans' in rel.when) ?
-            ', '+rel.when.start.in+'-'+rel.when.end.in :
-            'when' in rel && ('timespans' in rel.when) ? ', '+
-              minmaxer(rel.when.timespans) : ''
-          parent += '</span>; '
-        }
-        else {
-          related += '<p class="h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
-        }
-      }
-      descrip+=parent.length > 39 ? parent :''
-      descrip+=related.length > 37 ? related :''
-    }
-    //
-    // DESCRIPTIONS
-    // TODO: link description to identifier URI if present
-    if (data.descriptions.length > 0 ) {
-      <!--val = data.descriptions[0]['value'].substring(0,300)-->
-      val = data.descriptions[0]['value']
-      if(val != undefined){
-        descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
-        +' ... </p>'
-      }
-    }
-    //
-    // CCODES
-    //
-    <!--if (data.ccodes.length > 0) {-->
-    if (!!data.countries) {
-      <!--console.log('data.countries',data.countries)-->
-      descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
-    }
-    //
-    // MINMAX
-    //
-    if(data.minmax && data.minmax.length>0){
-      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
-    }
-    descrip += '</div>'
-    return descrip
-  }
   // put a place record in #result_extra
-  function getPlace(pid){
-    <!--console.log('getPlace() - why???', pid)-->
-    $.ajax({
-      url: "/api/place/"+pid,
-      }).done(function( data ) {
-        console.log('getPlace() - why???', pid)
-        $("#result_extra").html(parsePlace(data))
-        // events on detail items
-        $('.ext').on('click', function(e) {
-          e.preventDefault();
-          str=$(this).text()
-          <!--console.log('str (identifier)',str)-->
-          // URL identifiers can be 'http*' or an authority prefix
-          if(str.substring(0,4).toLowerCase() == 'http'){
-            url = str
-          } else {
-            var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
-            url=base_urls[str.match(re)[1]]+str.match(re)[2]
-            console.log('url',url)
-          }
-          window.open(url, '_blank');
-        });
-        $('.exttab').on('click', function(e) {
-          e.preventDefault();
-          id=$(this).data('id')
-          console.log('id',id)
-          var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
-          url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
-          console.log('url',url)
-          window.open(url,'_blank')
-        });
-    });
-    <!--spinner_detail.stop()-->
-  }
+  // DEPRECATED
+  {#function getPlace(pid){#}
+  {#  <!--console.log('getPlace() - why???', pid)-->#}
+  {#  $.ajax({#}
+  {#    url: "/api/place/"+pid,#}
+  {#    }).done(function( data ) {#}
+  {#      console.log('getPlace() - why???', pid)#}
+  {#      $("#result_extra").html(parsePlace(data))#}
+  {#      // events on detail items#}
+  {#      $('.ext').on('click', function(e) {#}
+  {#        e.preventDefault();#}
+  {#        str=$(this).text()#}
+  {#        <!--console.log('str (identifier)',str)-->#}
+  {#        // URL identifiers can be 'http*' or an authority prefix#}
+  {#        if(str.substring(0,4).toLowerCase() == 'http'){#}
+  {#          url = str#}
+  {#        } else {#}
+  {#          var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;#}
+  {#          url=base_urls[str.match(re)[1]]+str.match(re)[2]#}
+  {#          console.log('url',url)#}
+  {#        }#}
+  {#        window.open(url, '_blank');#}
+  {#      });#}
+  {#      $('.exttab').on('click', function(e) {#}
+  {#        e.preventDefault();#}
+  {#        id=$(this).data('id')#}
+  {#        console.log('id',id)#}
+  {#        var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;#}
+  {#        url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]#}
+  {#        console.log('url',url)#}
+  {#        window.open(url,'_blank')#}
+  {#      });#}
+  {#  });#}
+  {#  <!--spinner_detail.stop()-->#}
+  {# }#}
 
   // map feature styles
   styles = {
@@ -1539,10 +1550,9 @@
       clearit()
     }
     doctype = 'place'
-    {#doctype = $("input[name='class']:checked").val()#}
+	  // on Enter
     if (e.keyCode === 13) {
-      <!--console.log('search on <Enter>')-->
-      // always hide search_info and traces_info on search
+      // always hide search_info
       $("#search_info").hide()
       if (searchScope() == 'idx'){
         searchPlacesIdx()

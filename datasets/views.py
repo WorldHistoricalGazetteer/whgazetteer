@@ -2615,9 +2615,11 @@ def read_file_into_dataframe(file, ext):
     df = pd.read_excel(file, converters={
       'id': str, 'start': str, 'end': str,
       'aat_types': str, 'lon': float, 'lat': float})
-
   else:
     raise ValueError(f"Unsupported file extension: {ext}")
+
+  # Convert column headers to lowercase
+  df.columns = df.columns.str.lower()
 
   return df
 
