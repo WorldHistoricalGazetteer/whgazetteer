@@ -591,7 +591,6 @@ class DatasetCollectionSummaryView(DetailView):
 
     # gather bounding boxes
     bboxes = [ds.bounds for ds in datasets]
-
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG

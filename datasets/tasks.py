@@ -627,7 +627,6 @@ def get_bounds_filter(bounds, idx):
 """
 performs elasticsearch > wdlocal queries
 from align_wdlocal()
-
 """
 def es_lookup_wdlocal(qobj, *args, **kwargs):
   print('qobj', qobj)
@@ -880,8 +879,7 @@ def align_wdlocal(pk, **kwargs):
     # everything unreviewed and deferred; skip records that had no prior hits (NULLs)
     qs = ds.places.filter(~Q(review_wd__in=[0,2]))
 
-  print('scope, count',scope,qs.count())
-
+  print('scope, count',scope, qs.count())
   for place in qs:
     # print('review_wd',place.review_wd)
     #place = get_object_or_404(Place, pk=6596036)

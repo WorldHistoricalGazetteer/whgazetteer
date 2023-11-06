@@ -124,8 +124,8 @@
 	          {% endif %}
             {% if ds.recon_status.idx %}
               <p>Accessioning has begun for this dataset. Initiating another reconciliation task could disrupt
-	              the workflow in progress. If you would like to stop the accessioning step and roll back the workflow,
-	              please <a href="#" class="feedback">contact the editorial team</a>.</p>
+	              the workflow in progress. If you would like to stop the accessioning step and roll
+	              back the workflow, please <a href="#" class="feedback">contact the editorial team</a>.</p>
             {% endif %}
             <p class="font-weight-bold mb-0">Name authority source</p>
             <p class="small">Your task will enter a queue and and an email notification sent when completed.</p>
@@ -141,14 +141,15 @@
                 <div id="wdlocal_tasks" class="smaller">
                   <div class="mt-0 smaller radiodiv">
                   {{ msg_wdlocal.msg|safe }}
-                  {% if msg_wdlocal.type == 'inprogress' %}
-                  <label class="mb-0">
-	                  <input type="radio" name="prior"  value="keep" id="r_keep_wd"> keep prior match results</label>
-                  <label class="mb-0">
-	                  <input type="radio" name="prior" value="zap"> delete prior match results</label>
-                  {% if user.is_superuser %}
-                  <label class="mb-0 ml-2">
-	                  <input type="checkbox" name="rerun"> smart rerun</label>{% endif %}
+                  {% if msg_wdlocal.type == 'inprogress' or user.is_superuser %}
+	                  <label class="mb-0">
+		                  <input type="radio" name="prior" value="keep" id="r_keep_wd"> keep prior match results</label>
+	                  <label class="mb-0">
+		                  <input type="radio" name="prior" value="zap"> delete prior match results</label>
+	                  {% if user.is_superuser %}
+	                  <label class="mb-0 ml-2">
+		                  <input type="checkbox" name="rerun"> smart rerun</label>
+	                  {% endif %}
                   {% endif %}
                   </div>
                 </div>
@@ -314,8 +315,10 @@
   $(function(){
     msgs = ["{{ msg_wdlocal.type }}","{{ msg_whg.type }}"]
     console.log('msgs',msgs)
-    if("{{ msg_wdlocal.type }}" == 'done' && '{{ ds.ds_status }}' != 'updated' ){
-      $("#r_wdlocal").attr('disabled',true)
+    if("{{ msg_wdlocal.type }}" == 'done' &&
+		    "{{ ds.ds_status }}" != 'updated' && "{{ whgteam }}" == False
+    ){
+      $("#r_wdlocal").attr('disabled', true)
 	    $("#r_whg").prop('checked','true')
     }
     found = msgs.slice(0,2).some(r=> ['none','unreviewed','inprogress'].includes(r))

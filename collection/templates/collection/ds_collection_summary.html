@@ -390,11 +390,30 @@
     mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
   }
 
+	// chatgpt edits in response to anomaly 2023-11-06
   function cleanJson(text) {
-    z=text.replace(/'/g,'\\"')
-    y=z.replace(/point/,'Point')
-    return JSON.parse(JSON.parse(y))
+    // First unescape the stringified JSON.
+    var jsonString = text.replace(/^"|"$/g, ''); // Remove the enclosing quotes
+    jsonString = jsonString.replace(/\\"/g, '"'); // Unescape the double quotes
+    jsonString = jsonString.replace(/\\'/g, "'"); // Unescape the single quotes (if any)
+
+    // Now, parse the cleaned JSON string to get the actual JSON object.
+    var jsonObject = JSON.parse(jsonString);
+
+    // Replace 'point' with 'Point' if it's actually necessary (case-insensitive).
+    // Assuming it's part of the geometry type property which should be capitalized.
+    if (jsonObject.geometry && jsonObject.geometry.type.toLowerCase() === 'point') {
+      jsonObject.geometry.type = 'Point';
+    }
+
+    return jsonObject;
   }
+  {#function cleanJson(text) {#}
+  {#  z=text.replace(/'/g,'\\"')#}
+  {#  y=z.replace(/point/,'Point')#}
+  {#  return JSON.parse(JSON.parse(y))#}
+  {#}#}
+
 
   styles = {
     "MultiPolygon": {
