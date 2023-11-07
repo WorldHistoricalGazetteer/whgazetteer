@@ -1090,7 +1090,6 @@ def es_lookup_idx(qobj, *args, **kwargs):
       ],
       "should": [
         # bool::"should" outside of "must" boosts score
-        # {"terms": {"links.identifier": qobj["links"] }},
         {"terms": {"types.identifier": qobj["placetypes"]}}
       ],
       # spatial filters added according to what"s available
