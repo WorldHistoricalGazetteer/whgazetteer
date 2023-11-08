@@ -15,10 +15,10 @@ from datasets.tasks import normalize, get_bounds_filter
 from elasticsearch7 import Elasticsearch
 from places.models import Place, PlaceGeom
 
-    
+
 class SearchPageView(TemplateView):
   template_name = 'search/search.html'
-  
+
   def get_context_data(self, *args, **kwargs):
     # return list of datasets
     dslist = Dataset.objects.filter(public=True)
@@ -37,7 +37,7 @@ class SearchPageView(TemplateView):
     context['search_params'] = self.request.session.get('search_params')
     #context['bboxes'] = bboxes
     return context
-  
+
 class LookupView(View):
   @staticmethod
   def get(request):
@@ -58,7 +58,7 @@ class LookupView(View):
     print({"whg_id":hit['_id']})
     return JsonResponse({"whg_id":hit['_id']}, safe=False)
     #return {"whg_id":hit['_id']}
-  
+
 def fetchArea(request):
   aid = request.GET.get('pk')
   area = Area.objects.filter(id=aid)
@@ -67,7 +67,7 @@ def fetchArea(request):
 def makeGeom(pid,geom):
   # TODO: account for non-point
   geomset = []
-  if len(geom) > 0:    
+  if len(geom) > 0:
     for g in geom:
       geomset.append(
         {"type":g['location']['type'],
@@ -94,37 +94,65 @@ def suggestionItem(s):
   }
   return item
 
+# chatgpt replacement for multiple indexes
+"""
+  performs es search against 'whg' and 'pub'
+"""
+def suggester(q, indices):
+  es = settings.ES_CONN
+  print('indices in suggester()', indices)
+  suggestions = []
+
+  # Search across multiple indices
+  res = es.search(index=','.join(indices), body=q)  # indices is a list of index names
+  hits = res['hits']['hits']
+  if len(hits) > 0:
+    for h in hits:
+      # Initialize linkcount based on whether 'children' field is present
+      linkcount = len(set(h['_source']['children'])) if 'children' in h['_source'] else 0
+      suggestion = {
+        "_id": h['_id'],
+        "_index": h['_index'],  # Include the index name
+        "linkcount": linkcount,
+        "hit": h['_source'],
+      }
+      suggestions.append(suggestion)
+
+  # Sort suggestions by linkcount, if applicable
+  sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
+  return sortedsugs
+
 
 """
   performs es search in index aliased 'whg'
 """
-def suggester(q, idx):
-  print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
-  # returns only parents; children retrieved into place portal
-  print('suggester q',q)
-  es = settings.ES_CONN
-  # print('suggester es connector',es)
-
-  suggestions = []
-  
-  res = es.search(index=idx, body=q)
-  hits = res['hits']['hits']
-  if len(hits) > 0:
-    for h in hits:
-      suggestions.append(
-        {"_id": h['_id'],
-         "linkcount":len(set(h['_source']['children'])),
-         "hit": h['_source'],
-        }
-      )
-
-  sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
-  # TODO: there may be parents and children
-  return sortedsugs
-    
-""" 
+# def suggester(q, idx):
+#   # print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
+#   # returns only parents; children retrieved into place portal
+#   print('suggester q',q)
+#   es = settings.ES_CONN
+#   # print('suggester es connector',es)
+#
+#   suggestions = []
+#
+#   res = es.search(index=idx, body=q)
+#   hits = res['hits']['hits']
+#   if len(hits) > 0:
+#     for h in hits:
+#       suggestions.append(
+#         {"_id": h['_id'],
+#          "linkcount":len(set(h['_source']['children'])),
+#          "hit": h['_source'],
+#         }
+#       )
+#
+#   sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
+#   # TODO: there may be parents and children
+#   return sortedsugs
+#
+"""
   /search/index/?
-  from search.html 
+  from search.html
 """
 class SearchView(View):
   @staticmethod
@@ -147,7 +175,7 @@ class SearchView(View):
     start = request.GET.get('start')
     end = request.GET.get('end')
     bounds = request.GET.get('bounds')
-    
+
     params = {
       "qstr":qstr,
       "idx": idx,
@@ -156,7 +184,7 @@ class SearchView(View):
       "end": end,
       "bounds": bounds,
     }
-    request.session["search_params"] = params 
+    request.session["search_params"] = params
     print('search_params set', params)
 
     # TODO: fuzzy search; results ranked for closeness
@@ -188,15 +216,17 @@ class SearchView(View):
       q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
 
     print('query q in search', q)
-    suggestions = suggester(q, idx)
+
+    # suggestions = suggester(q, idx)
+    suggestions = suggester(q, [idx, 'pub'])
     suggestions = [suggestionItem(s) for s in suggestions]
     # print('suggestions', suggestions)
     # return query params for ??
     result = {'get': request.GET, 'suggestions': suggestions, 'session': params }
 
     return JsonResponse(result, safe=False)
-      
-  
+
+
 """
   executes search on db.places /search/db
 """
@@ -212,7 +242,7 @@ class SearchDatabaseView(View):
         [int] year: within place.minmax timespan
         [string] bounds: text of JSON geometry
         [int] dsid: dataset.id
-        
+
     """
     name = request.GET.get('name')
     name_contains = request.GET.get('name_contains') or None
@@ -229,13 +259,13 @@ class SearchDatabaseView(View):
       area = Area.objects.get(id = bounds['id'][0])
       print('bounds area', area)
       ga = GEOSGeometry(json.dumps(area.geojson))
-    
+
     print('seaech db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
     qs = Place.objects.filter(dataset__public=True)
-    
+
     if bounds:
       print('bounds geometry', ga[:200])
-      qs = qs.filter(geoms__geom__within=ga)      
+      qs = qs.filter(geoms__geom__within=ga)
     else:
       print('no bounds, or empty string')
 
@@ -264,14 +294,14 @@ class SearchDatabaseView(View):
         g["properties"] = {"pid":p.place_id, "title": p.title}
         suglist.append(g)
       return suglist
-      
+
     # mimics suggestion items from SearchView (index)
     suggestions = []
     print('qs length', count)
     print('filtered qs length', len(filtered))
     for place in filtered:
       ds=place.dataset
-      try:        
+      try:
         suggestions.append({
           "pid": place.id,
           "ds": {"id":ds.id, "label": ds.label, "title": ds.title},
@@ -284,10 +314,10 @@ class SearchDatabaseView(View):
         })
       except:
         print("db sugbuilder error:", place.id, sys.exc_info())
-      
+
     result = {'get': request.GET, 'count': count, 'suggestions': suggestions}
     return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii':False})
-  
+
 '''
   returns 8000 index docs in current map viewport
   OR if task == 'count': count of features in area
@@ -345,13 +375,13 @@ class FeatureContextView(View):
             },
             "relation": "within"
           }
-        }}        
-      }    
+        }}
+      }
     }}
     response = contextSearch(idx, doctype, q_context_all, task)
     return JsonResponse(response, safe=False)
 
-''' 
+'''
   Returns places in a trace body
 '''
 def getGeomCollection(idx,doctype,q):
@@ -379,7 +409,7 @@ def getGeomCollection(idx,doctype,q):
          }
         }
       )
-  #print(str(len(collection['features']))+' features')  
+  #print(str(len(collection['features']))+' features')
   return collection
 
 class CollectionGeomView(View):
@@ -400,7 +430,7 @@ class CollectionGeomView(View):
                  } for pg in placegeoms]
     fcoll = {"type":"FeatureCollection", "features": features}
     print('len(fc["features"])',len(fcoll['features']))
-    
+
     return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 class TraceGeomView(View):
@@ -435,4 +465,3 @@ class TraceGeomView(View):
 
 def home(request):
   return render(request, 'search/home.html')
-

@@ -282,10 +282,133 @@ def profileHit(hit):
   profile['geoms'] = geom_objlist
   return profile
 
+# from elastic.es_utils import makeDoc, parsePlace
+
+# ***
+# called from makeDoc()
+# ***
+def uriMaker(place):
+  from django.shortcuts import get_object_or_404
+  from datasets.models import Dataset
+  ds = get_object_or_404(Dataset,id=place.dataset.id)
+  if 'whgazetteer' in ds.uri_base:
+    return ds.uri_base + str(place.id)
+  else:
+    return ds.uri_base + str(place.src_id)
+
+# ***
+# make an ES doc from a Place instance
+# called from ALL indexing functions (initial and updates)
+# ***
+def makeDoc(place):
+  es_doc = {
+    "relation": {},
+    "children": [],
+    "suggest": {"input":[]},
+    "place_id": place.id,
+    "dataset": place.dataset.label,
+    "src_id": place.src_id,
+    "title": place.title,
+    "uri": uriMaker(place),
+    "ccodes": place.ccodes,
+    "names": parsePlace(place,'names'),
+    "types": parsePlace(place,'types'),
+    "geoms": parsePlace(place,'geoms'),
+    "links": parsePlace(place,'links'),
+    "fclasses": place.fclasses,
+    "timespans": [{"gte":t[0],"lte":t[1]} for t in place.timespans] if place.timespans not in [None,[]] else [],
+    "minmax": {"gte":place.minmax[0],"lte":place.minmax[1]} if place.minmax not in [None,[]] else [],
+    "descriptions": parsePlace(place,'descriptions'),
+    "depictions": parsePlace(place,'depictions'),
+    "relations": parsePlace(place,'related'),
+    "searchy": []
+  }
+  return es_doc
+
+# ***
+# fill ES doc arrays from database jsonb objects
+# ***
+def parsePlace(place, attr):
+  qs = eval('place.'+attr+'.all()')
+  arr = []
+  for obj in qs:
+    if attr == 'geoms':
+      g = obj.jsonb
+      geom={"location":{"type":g['type'],"coordinates":g['coordinates']}}
+      if 'citation' in g.keys(): geom["citation"] = g['citation']
+      if 'geowkt' in g.keys(): geom["geowkt"] = g['geowkt']
+      arr.append(geom)
+    elif attr == 'whens':
+      when_ts = obj.jsonb['timespans']
+      # TODO: index wants numbers, spec says strings
+      # expect strings, including operators
+      for t in when_ts:
+        x={"start": int(t['start'][list(t['start'])[0]]),
+           "end": int(t['end'][list(t['end'])[0]]) }
+        arr.append(x)
+    else:
+      arr.append(obj.jsonb)
+  return arr
+
+# ***
+# index places in public datasets
+# ***
+from elasticsearch.helpers import bulk
+from django.conf import settings
+from django.db import transaction
+# 7790 to index 2023-11-08
+def indexPublic(idx='pub_20231108'):
+    es = settings.ES_CONN
+    # es.delete_by_query(index='pub', body={"query": {"match_all": {}}})
+    from places.models import Place
+
+    # convert a Place into a dict that's ready for indexing
+    def make_bulk_doc(place):
+        doc = makeDoc(place)
+        # Add names and title to search field
+        searchy_content = set(doc.get('searchy', []))
+        searchy_content.update(n['toponym'] for n in doc['names'])
+        searchy_content.add(doc['title'])
+        doc['searchy'] = list(searchy_content)
+        return {
+            "_index": idx,
+            "_id": place.id,  # place ID as document ID
+            "_source": doc,
+        }
+
+    places_to_index = Place.objects.filter(dataset__public=True,
+                                  dataset__ds_status__in=['wd-complete', 'accessioning'],
+                                  indexed=False, # not in 'whg'
+                                  idx_pub=False) # not in 'pub'
+    place_ids_to_index = list(places_to_index.values_list('id', flat=True))
+
+    batch_size = 1000  # Define batch size
+    total_indexed = 0
+    failed_docs = []
+
+    # Create a generator to yield bulk indexing docs
+    actions = (make_bulk_doc(place) for place in places_to_index.iterator())
+
+    # Perform the bulk index operation and collect the response
+    with transaction.atomic():  # Use a transaction to prevent race conditions
+        successes, errors = bulk(es, actions, index=idx, stats_only=True, raise_on_error=False)
+
+        # Filter out the successful Place IDs if necessary
+        # For example, you could match them with the response or just assume all were successful
+        successful_ids = place_ids_to_index  # Placeholder, adjust based on your needs
+
+        # Update the idx_pub flag for all successful Place objects
+        Place.objects.filter(id__in=successful_ids).update(idx_pub=True)
+
+    # Process errors if any
+    if errors:
+      failed_docs.extend(errors)  # Add the errors for later analysis
+
+    print(f"Indexing complete. Total indexed places: {total_indexed}.")
+
 # ***
 # index docs given place_id list
 # ***
-# TODO:
 def indexSomeParents(es, idx, pids):
   from datasets.tasks import maxID
   from django.shortcuts import get_object_or_404
@@ -637,12 +760,12 @@ def confirm(prompt=None, resp=False):
 # create an index
 # ***
 def esInit(idx):
-  idx='wd_text'
+  idx='pub_20231108'
   import os, codecs
   from django.conf import settings
   os.chdir('elastic/mappings/')
   es = settings.ES_CONN
-  file = codecs.open('wd2023_multi.json', 'r', 'utf8').read()
+  file = codecs.open('pub_20231108.json', 'r', 'utf8').read()
   mappings = ''.join(line for line in file if not '/*' in line)
   # zap existing if exists, re-create
   if confirm(prompt='Zap index '+idx+'?', resp=False):
@@ -652,81 +775,15 @@ def esInit(idx):
       print(ex)
     try:
       es.indices.create(index=idx, ignore=400, body=mappings)
-      es.indices.put_alias('wd_text', 'wd')
+      es.indices.put_alias('pub_20231108', 'pub')
     except Exception as ex:
       print(ex)
     print ('index "'+idx+'" created')
   else:
     print('oh, okay')
 
-# ***
-# called from makeDoc()
-# ***
-def uriMaker(place):
-  from django.shortcuts import get_object_or_404
-  from datasets.models import Dataset
-  ds = get_object_or_404(Dataset,id=place.dataset.id)
-  if 'whgazetteer' in ds.uri_base:
-    return ds.uri_base + str(place.id)
-  else:
-    return ds.uri_base + str(place.src_id)
-
-# ***
-# make an ES doc from a Place instance
-# called from ALL indexing functions (initial and updates)
-# ***
-def makeDoc(place):
-  es_doc = {
-    "relation": {},
-    "children": [],
-    "suggest": {"input":[]},
-    "place_id": place.id,
-    "dataset": place.dataset.label,
-    "src_id": place.src_id,
-    "title": place.title,
-    "uri": uriMaker(place),
-    "ccodes": place.ccodes,
-    "names": parsePlace(place,'names'),
-    "types": parsePlace(place,'types'),
-    "geoms": parsePlace(place,'geoms'),
-    "links": parsePlace(place,'links'),
-    # new, for index whg03
-    "fclasses": place.fclasses,
-    "timespans": [{"gte":t[0],"lte":t[1]} for t in place.timespans] if place.timespans not in [None,[]] else [],
-    "minmax": {"gte":place.minmax[0],"lte":place.minmax[1]} if place.minmax not in [None,[]] else [],
-    "descriptions": parsePlace(place,'descriptions'),
-    "depictions": parsePlace(place,'depictions'), 
-    "relations": parsePlace(place,'related'),
-    "searchy": []
-  }
-  return es_doc
-
-# ***
-# fill ES doc arrays from database jsonb objects
-# ***
-def parsePlace(place, attr):
-  qs = eval('place.'+attr+'.all()')
-  arr = []
-  for obj in qs:
-    if attr == 'geoms':
-      g = obj.jsonb
-      geom={"location":{"type":g['type'],"coordinates":g['coordinates']}}
-      if 'citation' in g.keys(): geom["citation"] = g['citation']
-      if 'geowkt' in g.keys(): geom["geowkt"] = g['geowkt']
-      arr.append(geom)
-    elif attr == 'whens':
-      when_ts = obj.jsonb['timespans']
-      # TODO: index wants numbers, spec says strings
-      # expect strings, including operators
-      for t in when_ts:
-        x={"start": int(t['start'][list(t['start'])[0]]),
-           "end": int(t['end'][list(t['end'])[0]]) }
-        arr.append(x)
-    else:
-      arr.append(obj.jsonb)
-  return arr
-
 def repair2():
+  idx=''
   from django.db import connection
   cursor1 = connection.cursor()
   cursor1.execute("SELECT aat_id FROM types where fclass is not null")
@@ -752,7 +809,6 @@ def repair2():
       print(fc[0])
       es.update_by_query(index=idx, body=q_update, conflicts='proceed')
 
-
 def repair_fclasses():
   from places.models import Place
   # indexed = Place.objects.filter(indexed=True)
@@ -773,7 +829,6 @@ def repair_fclasses():
       }}
     }
     es.update_by_query(index=idx, body=q_update, conflicts='proceed')
-
 
 """
   find perform match for hits matching variant(s) and geoms <= ~3k apart

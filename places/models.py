@@ -28,8 +28,8 @@ class Place(models.Model):
   minmax = ArrayField(models.IntegerField(blank=True, null=True),null=True,blank=True)
   timespans = JSONField(blank=True,null=True) # for list of lists
   fclasses = ArrayField(models.CharField(max_length=1, choices=FEATURE_CLASSES), null=True, blank=True)
-  indexed = models.BooleanField(default=False)  
-  idx_pub = models.BooleanField(default=False)
+  indexed = models.BooleanField(default=False)  # in 'whg' index
+  idx_pub = models.BooleanField(default=False)  # in 'pub' index
   flag = models.BooleanField(default=False) # not in use
   # added Apr 2023, for case of no start/end
   attestation_year = models.IntegerField(null=True,blank=True)
@@ -200,7 +200,7 @@ class PlaceGeom(models.Model):
   def minmax(self):
     #tsarr=[]; intarr=[]
     #wg = self.jsonb['when']
-    from edtf import parse_edtf    
+    from edtf import parse_edtf
     def yearPadder(y):
       #print('y',y)
       year = str(y).zfill(5) if str(y)[0] == '-' else str(y).zfill(4)
@@ -208,7 +208,7 @@ class PlaceGeom(models.Model):
     def getInt(expr):
       #print('expr',expr)
       return int(parse_edtf( yearPadder(list(expr.values())[0])).get_year() )
-    
+
     #when = pg.jsonb['when'] if 'when' in pg.jsonb else None
     when = self.jsonb['when'] if 'when' in self.jsonb else None
     tsarr = when['timespans'] if when and 'timespans' in when else None

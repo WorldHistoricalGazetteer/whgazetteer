@@ -13,13 +13,97 @@
   },
   "mappings" : {
     "properties" : {
-      "title" : {
-        "type" : "keyword",
-        "normalizer": "standard"
+      "ccodes" : {
+        "type" : "keyword"
       },
-      "searchy" : {
-        "type" : "keyword",
-        "normalizer": "standard"
+      "children" : {
+        "type" : "keyword"
+      },
+      "dataset" : {
+        "type" : "keyword"
+      },
+      "depictions" : {
+        "properties" : {
+          "id" : {
+            "type" : "keyword"
+          },
+          "license" : {
+            "type" : "text"
+          },
+          "title" : {
+            "type" : "text"
+          }
+        }
+      },
+      "descriptions" : {
+        "properties" : {
+          "id" : {
+            "type" : "keyword"
+          },
+          "lang" : {
+            "type" : "keyword"
+          },
+          "value" : {
+            "type" : "text"
+          }
+        }
+      },
+      "fclasses" : {
+        "type" : "keyword"
+      },
+      "geoms" : {
+        "properties" : {
+          "citation" : {
+            "properties" : {
+              "@id" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "id" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "label" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              }
+            }
+          },
+          "geowkt" : {
+            "type" : "keyword"
+          },
+          "location" : {
+            "type" : "geo_shape"
+          }
+        }
+      },
+      "links" : {
+        "properties" : {
+          "identifier" : {
+            "type" : "keyword"
+          },
+          "type" : {
+            "type" : "keyword"
+          }
+        }
+      },
+      "minmax" : {
+        "type" : "integer_range"
       },
       "names" : {
         "properties" : {
@@ -138,98 +222,6 @@
           }
         }
       },
-      "ccodes" : {
-        "type" : "keyword"
-      },
-      "children" : {
-        "type" : "keyword"
-      },
-      "dataset" : {
-        "type" : "keyword"
-      },
-      "depictions" : {
-        "properties" : {
-          "id" : {
-            "type" : "keyword"
-          },
-          "license" : {
-            "type" : "text"
-          },
-          "title" : {
-            "type" : "text"
-          }
-        }
-      },
-      "descriptions" : {
-        "properties" : {
-          "id" : {
-            "type" : "keyword"
-          },
-          "lang" : {
-            "type" : "keyword"
-          },
-          "value" : {
-            "type" : "text"
-          }
-        }
-      },
-      "fclasses" : {
-        "type" : "keyword"
-      },
-      "geoms" : {
-        "properties" : {
-          "citation" : {
-            "properties" : {
-              "@id" : {
-                "type" : "text",
-                "fields" : {
-                  "keyword" : {
-                    "type" : "keyword",
-                    "ignore_above" : 256
-                  }
-                }
-              },
-              "id" : {
-                "type" : "text",
-                "fields" : {
-                  "keyword" : {
-                    "type" : "keyword",
-                    "ignore_above" : 256
-                  }
-                }
-              },
-              "label" : {
-                "type" : "text",
-                "fields" : {
-                  "keyword" : {
-                    "type" : "keyword",
-                    "ignore_above" : 256
-                  }
-                }
-              }
-            }
-          },
-          "geowkt" : {
-            "type" : "keyword"
-          },
-          "location" : {
-            "type" : "geo_shape"
-          }
-        }
-      },
-      "links" : {
-        "properties" : {
-          "identifier" : {
-            "type" : "keyword"
-          },
-          "type" : {
-            "type" : "keyword"
-          }
-        }
-      },
-      "minmax" : {
-        "type" : "integer_range"
-      },
       "place_id" : {
         "type" : "long"
       },
@@ -253,6 +245,10 @@
           }
         }
       },
+      "searchy" : {
+        "type" : "keyword",
+        "normalizer": "standard"
+      },
       "src_id" : {
         "type" : "keyword"
       },
@@ -272,6 +268,10 @@
       },
       "timespans" : {
         "type" : "integer_range"
+      },
+      "title" : {
+        "type" : "keyword",
+        "normalizer": "standard"
       },
       "types" : {
         "properties" : {
