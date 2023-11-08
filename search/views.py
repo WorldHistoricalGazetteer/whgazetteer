@@ -84,6 +84,7 @@ def suggestionItem(s):
   item = {
     "whg_id": h['whg_id'] if 'whg_id' in h else '',
     "pid":h['place_id'],
+    "index":s['_index'],
     "linkcount":s['linkcount'],
     "name": h['title'],
     "variants":[n for n in h['suggest']['input'] if n != h['title']],

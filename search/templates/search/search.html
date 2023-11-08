@@ -1045,7 +1045,6 @@
           })
         }
         // adds a row to result_div that gets inserted into #result_div later
-        //result_table += sugLister(sug, doctype, scope)
         result_table += sugLister(sug)
         countadded +=1
         // result_table += sugTableRow(sug, doctype, scope)   -->
@@ -1240,26 +1239,31 @@
   */
   function sugLister(sug) {
   //function sugLister(sug, doctype, scope) {
-		{#console.log('sug', sug)#}
+		console.log('sug', sug)
     // this is count of children[]; add 1 to include self
     linkcount = parseInt(sug['linkcount']) +1
-    attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
+    attestations = sug['ds'] ? '' : ' <i>' + linkcount +
+		    (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
     vcount = sug['variants'].length
     variants = vcount > 0 ? sug['variants'].sort().slice(0,6).join('; ') : ''
     ccodes = sug['ccodes'] != '' ? ' '+sug['ccodes']+' ' : ''
     types = sug['types'].join('; ')
     geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
     // whgid if index search, else pid
-    identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
+    // identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
+    identifier = sug['index'].startsWith('pub') ? sug['pid'] : sug['whg_id']
     dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
+	  index = sug['index']
     // add dataset link if this is db search result
     if(sug['ds']){
-      dslink = dsid != 394 ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': sug['ds']['title']
+      dslink = dsid != 394 ? '<a href="#" class="ds-link" data-id='+dsid+'>'+
+		      sug['ds']['title']+'</a>': sug['ds']['title']
     } else {
       dslink = ''
     }
     // link destination varies
-    link_class = sug['ds'] ? 'db-link' : 'place-link'
+    {#link_class = sug['ds'] ? 'db-link' : 'place-link'#}
+    link_class = sug['index'].startsWith('pub') ? 'db-link' : 'place-link'
     variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
 
     // table row
@@ -1609,6 +1613,7 @@
     other.removeClass('active')
     $(this).addClass('active')
   })
+
   // load place portal page from result_div item title links
   // TODO: links are nested so click produces 2 events
   $("#result_div").on('click', '.trace-link', function(e){
@@ -1720,23 +1725,7 @@
     window.spinner_search = new Spin.Spinner(spin_opts).spin();
     $("#search_filters").append(spinner_search.el);
   }
-  {#switchTab = function(scope){#}
-  {#  if(scope == 'db'){#}
-  {#    $("#scope_idx").removeClass('active')#}
-  {#    $("#scope_db").addClass('active')#}
-  {#    $("#search_filters").css("background","whitesmoke")#}
-  {#    $("#scope_db").css("border-bottom","1px solid whitesmoke")#}
-  {#    $("#dbicon").fadeIn()#}
-  {#    $("#filter_spatial").hide()#}
-  {#    $("#input_area").val('')#}
-  {#  } else {#}
-  {#    $("#scope_db").removeClass('active')#}
-  {#    $("#scope_idx").addClass('active')#}
-  {#    $("#search_filters").css("background","#f1fff1")#}
-  {#    $("#dbicon").hide()#}
-  {#    $("#filter_spatial").show()#}
-  {#  }#}
-  {# }#}
+
   resetSearch = function(){
     localStorage.removeItem('last_results')
     localStorage.setItem('search_scope', 'idx')
