@@ -11,7 +11,7 @@ Current numbered WHG indexes are:
 * **whg07** (keyword)
   * Name fields are indexed as _keywords_ and normalized (_lowercase_, _asciifolding_)
   * Search screen matches are exact for any word in the name (e.g. 'san' returns 'San Diego' as well as 'San' only)
-* **whg08** (text)
+* **whg08** (text)`
   * Name fields are indexed as text; default lowercase normalization only
   * Search screen query for 'san' returns exact matches first, then all records with the token 'san' in their variants, including '**San** Francisco' and 'Kimpoku-**san**' 
 
