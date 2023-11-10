@@ -22,6 +22,9 @@
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
+    <style>
+        .row-pub {border-left: 2px red solid;}
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -1238,8 +1241,7 @@
     formats search result item (sug)
   */
   function sugLister(sug) {
-  //function sugLister(sug, doctype, scope) {
-		console.log('sug', sug)
+    console.log('sug', sug)
     // this is count of children[]; add 1 to include self
     linkcount = parseInt(sug['linkcount']) +1
     attestations = sug['ds'] ? '' : ' <i>' + linkcount +
@@ -1250,7 +1252,6 @@
     types = sug['types'].join('; ')
     geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
     // whgid if index search, else pid
-    // identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
     identifier = sug['index'].startsWith('pub') ? sug['pid'] : sug['whg_id']
     dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
 	  index = sug['index']
@@ -1266,8 +1267,9 @@
     link_class = sug['index'].startsWith('pub') ? 'db-link' : 'place-link'
     variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
 
+    var rowClass = sug['index'].startsWith('whg') ? 'row-whg' : 'row-pub';
     // table row
-    item = '<tr class="search-row place-item" data-id="'+identifier
+    item = '<tr class="search-row place-item '+rowClass+' " data-id="'+identifier
     +'" data-types="'+sug['types']
     +'" data-ccodes="'+ccodes
     +'">'
