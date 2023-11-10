@@ -149,22 +149,20 @@
         && this.text.includes('coordinates');
     });  
     
-    if(pgeoms.length >0){
+    if(pgeoms.length > 0){
       for (i=0;i<pgeoms.length;i++){
         let g = JSON.parse(pgeoms[i].text)
-        <!--console.log(JSON.parse(pgeoms[i].text))-->
         g['properties'] = {"id": pgeoms[i].id}
         geom['features'].push(g)
       }
       layers = []
       features = L.geoJSON(geom, {
         onEachFeature: function(feature, layer) {
-          f=feature; l=layer;
-          layers.push(layer)
-          <!--console.log('feature',f)-->
-          if(f.type != 'Point'){
-            console.log('f.type',f.type)
-            layer.setStyle(styles[f.type].default)
+            f=feature; l=layer;
+            layers.push(layer)
+            if(!['Point', 'MultiPoint'].includes(f.type)){
+                console.log('f.type',f.type)
+                layer.setStyle(styles[f.type].default)
           }
         }
       }).addTo(mappo);  
@@ -478,8 +476,7 @@
     });
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].id, gelems[i].text)
-      
-      <!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
+
       geoms.push(t_geom)
     }
 
@@ -489,13 +486,9 @@
       features = L.geoJSON(geoms, {
         onEachFeature: function(feature, layer) {
           f=feature; l=layer;
-          <!--identifier = f.properties.id;-->
           console.log('feature',f)
           if(f.type != 'Point'){
             layer.setStyle(styles[f.geometry.type].default)
-            <!--.bindPopup(f.properties.title+' ('+identifier+')'-->
-            <!--)-->
-            <!--idToFeature[identifier] = layer-->
           }
         }
       }).addTo(map);

@@ -150,8 +150,6 @@ class SearchView(View):
     
     params = {
       "qstr":qstr,
-      # "doctype": doctype,
-      # "scope": scope,
       "idx": idx,
       "fclasses": fclasses,
       "start": start,
@@ -162,22 +160,26 @@ class SearchView(View):
     print('search_params set', params)
 
     # TODO: fuzzy search; results ranked for closeness
-    # TODO: remove remaining references to traces
-    q = { "size": 100,
-          "query": {"bool": {
-            "must": [
-              {"exists": {"field": "whg_id"}},
-              {"multi_match": {
+    # always include fclass-less records in results (i.e. ['X']
+    fclist = ['X']
+    if fclasses:
+      fclist.extend(fclasses.split(','))
+
+    q = {
+      "size": 100,
+      "query": {
+        "bool": {
+          "must": [
+            {"exists": {"field": "whg_id"}},
+            {"multi_match": {
                 "query": qstr,
                 "fields": ["title^3", "names.toponym", "searchy"]
-              }}
-            ]
-          }}
+            }},
+            {"terms": {"fclasses": fclist}}
+          ]
+        }
+      }
     }
-    if fclasses:
-      fclist = fclasses.split(',')
-      fclist.append('X')
-      q['query']['bool']['must'].append({"terms": {"fclasses": fclist}})
 
     if start:
       q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
