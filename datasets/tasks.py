@@ -1252,10 +1252,10 @@ def es_lookup_idx(qobj, *args, **kwargs):
 # TODO (3): option with collection constraint; writes place_link records for partner records
 @task(name="align_idx")
 def align_idx(pk, *args, **kwargs):
-  print('kwargs in align_idx()',kwargs)
-  test = kwargs['test']
   task_id = align_idx.request.id
   ds = get_object_or_404(Dataset, id=pk)
+  print('kwargs in align_idx()',kwargs)
+  test = kwargs['test']
   idx = 'whg'
   user = get_object_or_404(User, id=kwargs['user'])
   # get last index identifier (used for _id)

@@ -690,7 +690,6 @@ def makeDoc(place):
     "types": parsePlace(place,'types'),
     "geoms": parsePlace(place,'geoms'),
     "links": parsePlace(place,'links'),
-    # new, for index whg03
     "fclasses": place.fclasses,
     "timespans": [{"gte":t[0],"lte":t[1]} for t in place.timespans] if place.timespans not in [None,[]] else [],
     "minmax": {"gte":place.minmax[0],"lte":place.minmax[1]} if place.minmax not in [None,[]] else [],
