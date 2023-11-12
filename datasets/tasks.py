@@ -7,9 +7,8 @@ from django_celery_results.models import TaskResult
 from django.conf import settings
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.db import connection
+from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 
@@ -26,23 +25,102 @@ from collection.models import Collection
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
-from elastic.es_utils import makeDoc, build_qobj, profileHit
-#from datasets.task_utils import *
 from datasets.utils import bestParent, elapsed, getQ, \
   HitRecord, hully, makeNow, makeDate, parse_wkt, post_recon_update
-
+from elastic.es_utils import makeDoc, build_qobj, profileHit
 from main.models import Log
+from places.models import Place
 
-#from places.models import Place
-##
-from elasticsearch7 import Elasticsearch
+from elasticsearch7.helpers import bulk, streaming_bulk
 
-## global for all es connections in this file?
+## global for all es connections in this file
 es = settings.ES_CONN
 
 @shared_task(name="testy")
 def testy():
   print("I'm testy...who wouldn't be?")
+
+"""
+  adds newly public dataset to 'pub' index
+  making it accessible to search (and API eventually)
+"""
+@shared_task()
+def index_to_pub(dataset_id, idx='pub'):
+    es = settings.ES_CONN
+    # Fetch dataset by ID
+    try:
+        dataset = Dataset.objects.get(pk=dataset_id, public=True, ds_status__in=['wd-complete', 'accessioning'])
+    except Dataset.DoesNotExist:
+        print(f"Dataset with ID {dataset_id} does not exist or is not public/ready for accessioning.")
+        return  # Exit if dataset conditions aren't met
+
+    places_to_index = Place.objects.filter(dataset=dataset, indexed=False, idx_pub=False)
+    place_ids_to_index = list(places_to_index.values_list('id', flat=True))
+
+    # convert a Place into a dict that's ready for indexing
+    def make_bulk_doc(place):
+        doc = makeDoc(place)
+        doc['whg_id'] = ''
+        # Add names and title to search field
+        searchy_content = set(doc.get('searchy', []))
+        searchy_content.update(n['toponym'] for n in doc['names'])
+        searchy_content.add(doc['title'])
+        doc['searchy'] = list(searchy_content)
+        return {
+            "_index": idx,
+            "_id": place.id,  # place ID as document ID
+            "_source": doc,
+        }
+
+    actions = (make_bulk_doc(place) for place in places_to_index.iterator())
+
+    # Perform the bulk index operation and collect the response
+    successes, failed_docs = 0, []
+    with transaction.atomic():  # Use a transaction to prevent race conditions
+        for ok, action in streaming_bulk(es, actions, index=idx, raise_on_error=False):
+            if ok:
+                successes += 1
+            else:
+                failed_docs.append(action)
+
+    # Update the idx_pub flag for all successful Place objects using the Place IDs
+    Place.objects.filter(id__in=place_ids_to_index).update(idx_pub=True)
+
+    print(f"Indexing complete. Total indexed places: {successes}. Failed documents: {len(failed_docs)}")
+    if failed_docs:
+        print(f"Failed documents: {failed_docs}")
+
+@shared_task()
+def unindex_from_pub(dataset_id, idx='pub'):
+  es = settings.ES_CONN
+  try:
+    dataset = Dataset.objects.get(pk=dataset_id)
+  except Dataset.DoesNotExist:
+    print(f"Dataset with ID {dataset_id} does not exist.")
+    return  # Exit if the dataset is not found
+
+  # Define the query for the delete_by_query operation
+  query = {
+    "query": {
+      "term": {
+        "dataset": dataset.label  # This field should match the field in the ES document
+      }
+    }
+  }
+
+  # Perform the delete_by_query operation
+  response = es.delete_by_query(index=idx, body=query, refresh=True)
+
+  # Check response for failures and take necessary actions
+  if response['failures']:  # Check if there are any failures returned in the response
+    print(f"Failures in unindexing: {response['failures']}")
+
+  # Now, update the idx_pub flag for all Place objects of this dataset
+  with transaction.atomic():
+    Place.objects.filter(dataset=dataset).update(idx_pub=False)
+
+  print(f"Unindexing complete. Removed {response['deleted']} documents from index '{idx}'.")
+
 
 """ 
   called by utils.downloader()

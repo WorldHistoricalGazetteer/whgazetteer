@@ -7,8 +7,11 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Q
+from django.db.models.signals import pre_save
 from django.db.utils import DataError
+from django.dispatch import receiver
 from django.forms import modelformset_factory
 from django.http import HttpResponseServerError, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import redirect, get_object_or_404, render
@@ -17,14 +20,11 @@ from django.urls import reverse
 from django.views.generic import (CreateView, ListView, UpdateView, DeleteView, DetailView)
 from django_celery_results.models import TaskResult
 
-
 # external
 from celery import current_app as celapp
 from copy import deepcopy
-import codecs, math, mimetypes, os, re, shutil, sys, tempfile
-from deepdiff import DeepDiff as diff
+import shutil, sys, tempfile, codecs, math, mimetypes, os, re
 import numpy as np
-from elasticsearch7 import Elasticsearch
 es = settings.ES_CONN
 import pandas as pd
 from pathlib import Path
@@ -39,7 +39,7 @@ from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.static.hashes.parents import ccodes as cchash
 
 # NB these task names ARE in use; they are generated dynamically
-from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
+from datasets.tasks import align_wdlocal, align_idx, align_tgn, index_to_pub, maxID
 
 # from datasets.update import deleteFromIndex
 from datasets.utils import *
@@ -48,6 +48,24 @@ from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
 from resources.models import Resource
+
+
+# temporary test
+def trigger_index(request, dataset_id):
+    # You can add user permission checks here
+
+    # Check if the dataset exists and is eligible for indexing
+    dataset = get_object_or_404(Dataset, pk=dataset_id, public=True, ds_status__in=['wd-complete', 'accessioning'])
+
+    # Trigger the Celery task
+    task = index_to_pub.delay(dataset_id)
+
+    # Return a response with task details
+    return JsonResponse({
+        'status': 'success',
+        'task_id': task.id,
+        'message': f'Indexing task for dataset {dataset_id} triggered.'
+    })
 
 """
   email various, incl. Celery down notice
@@ -266,7 +284,6 @@ def indexMultiMatch(pid, matchlist):
       print('q_updatewinner failed (whg_id)', winner['whg_id'])
       print('Error: ', rq.error, rq.info)
 
-    from copy import deepcopy
     newsrcd = deepcopy(srcd)
     # update it to reflect demotion
     newsrcd['relation'] = {"name":"child", "parent":winner['whg_id']}

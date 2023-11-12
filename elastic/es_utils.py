@@ -301,6 +301,7 @@ def uriMaker(place):
 # called from ALL indexing functions (initial and updates)
 # ***
 def makeDoc(place):
+  fclasses_value = place.fclasses if place.fclasses not in [None, []] else ["X"]
   es_doc = {
     "relation": {},
     "children": [],
@@ -315,8 +316,7 @@ def makeDoc(place):
     "types": parsePlace(place,'types'),
     "geoms": parsePlace(place,'geoms'),
     "links": parsePlace(place,'links'),
-    "fclasses": place.get('fclasses') or ["X"],
-    # "fclasses": place.fclasses,
+    "fclasses": fclasses_value,
     "timespans": [{"gte":t[0],"lte":t[1]} for t in place.timespans] if place.timespans not in [None,[]] else [],
     "minmax": {"gte":place.minmax[0],"lte":place.minmax[1]} if place.minmax not in [None,[]] else [],
     "descriptions": parsePlace(place,'descriptions'),
@@ -358,7 +358,7 @@ from elasticsearch.helpers import bulk
 from django.conf import settings
 from django.db import transaction
 # 7790 to index 2023-11-08
-def indexPublic(idx='pub_20231108'):
+def indexPublic(idx='pub_20231111'):
     es = settings.ES_CONN
     # es.delete_by_query(index='pub', body={"query": {"match_all": {}}})
     from places.models import Place
@@ -366,6 +366,7 @@ def indexPublic(idx='pub_20231108'):
     # convert a Place into a dict that's ready for indexing
     def make_bulk_doc(place):
         doc = makeDoc(place)
+        doc['whg_id'] = ''
         # Add names and title to search field
         searchy_content = set(doc.get('searchy', []))
         searchy_content.update(n['toponym'] for n in doc['names'])

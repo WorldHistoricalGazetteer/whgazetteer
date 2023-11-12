@@ -211,29 +211,6 @@ class SearchView(View):
       }
     }
 
-    # q = {
-    #   "size": 100,
-    #   "query": {
-    #     "bool": {
-    #       "must": [
-    #         # {"exists": {"field": "whg_id"}},
-    #         {"multi_match": {
-    #             "query": qstr,
-    #             "fields": ["title^3", "names.toponym", "searchy"]
-    #         }},
-    #         {"terms": {"fclasses": fclist}}
-    #       ],
-    #       "should": [
-    #         {"exists": {"field": "whg_id"}},
-    #         {"bool": {"must_not": {"exists": {"field": "whg_id"}}}}
-    #       ],
-    #       "minimum_should_match": 1
-    #     }
-    #   }
-    # }
-    #
-
-
     if start:
       q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
     if bounds:
