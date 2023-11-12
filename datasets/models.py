@@ -12,7 +12,6 @@ from django.dispatch import receiver
 from django.urls import reverse
 #from django.shortcuts import get_object_or_404
 
-from .tasks import index_to_pub, unindex_from_pub
 from django_celery_results.models import TaskResult
 from elastic.es_utils import escount_ds
 from geojson import Feature
@@ -348,15 +347,18 @@ def remove_files(**kwargs):
 
 @receiver(pre_save, sender=Dataset)
 def toggle_public_status(sender, instance, **kwargs):
+  from .tasks import index_to_pub, unindex_from_pub
   # If 'public' is being toggled
   if instance.id:  # Check if it's an existing instance, not new
     old_instance = sender.objects.get(pk=instance.pk)
     print('toggler old_instance', old_instance)
+
     if old_instance.public != instance.public:  # There's a change in 'public' status
       if instance.public:
-        print('toggler old_instance', old_instance.places)
+        print('toggler, public?', instance.public)
         # Changed from False to True, index the records
-        transaction.on_commit(lambda: index_to_pub(instance))
+        transaction.on_commit(lambda: index_to_pub.delay(instance.id))
       else:
+        print('toggler, public?', instance.public)
         # Changed from True to False, remove the records from the index
-        transaction.on_commit(lambda: unindex_from_pub(instance))
+        transaction.on_commit(lambda: unindex_from_pub.delay(instance.id))

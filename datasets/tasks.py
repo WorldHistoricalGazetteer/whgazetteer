@@ -49,7 +49,7 @@ def index_to_pub(dataset_id, idx='pub'):
     es = settings.ES_CONN
     # Fetch dataset by ID
     try:
-        dataset = Dataset.objects.get(pk=dataset_id, public=True, ds_status__in=['wd-complete', 'accessioning'])
+        dataset = Dataset.objects.get(pk=dataset_id, ds_status__in=['wd-complete', 'accessioning'])
     except Dataset.DoesNotExist:
         print(f"Dataset with ID {dataset_id} does not exist or is not public/ready for accessioning.")
         return  # Exit if dataset conditions aren't met
