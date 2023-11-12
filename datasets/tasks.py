@@ -90,36 +90,88 @@ def index_to_pub(dataset_id, idx='pub'):
     if failed_docs:
         print(f"Failed documents: {failed_docs}")
 
+"""
+  unindex from 'pub': an entire dataset or a single record
+"""
 @shared_task()
-def unindex_from_pub(dataset_id, idx='pub'):
+def unindex_from_pub(dataset_id=None, place_id=None, idx='pub'):
   es = settings.ES_CONN
-  try:
-    dataset = Dataset.objects.get(pk=dataset_id)
-  except Dataset.DoesNotExist:
-    print(f"Dataset with ID {dataset_id} does not exist.")
-    return  # Exit if the dataset is not found
 
-  # Define the query for the delete_by_query operation
-  query = {
-    "query": {
-      "term": {
-        "dataset": dataset.label  # This field should match the field in the ES document
+  if place_id:  # If a place ID is specified, unindex only that place
+    try:
+      place = Place.objects.get(pk=place_id, idx_pub=True)
+      # Perform the delete operation for the specific place
+      response = es.delete(index=idx, id=str(place_id), refresh=True)
+
+      # Log the full response for debugging
+      print(f"Response from ES delete operation: {response}")
+      # return response
+      # Handle ES response after deletion
+      if response.get('result') == 'deleted':
+        # Update the idx_pub flag for this Place object
+        place.idx_pub = False
+        place.save()
+        # place.save(update_fields=['idx_pub'])
+        print(f"Unindexing complete for Place with ID {place_id}.")
+      else:
+        print(f"Failed to delete document with ID {place_id} from index '{idx}'. Result was: {response.get('result')}")
+
+    except Place.DoesNotExist:
+      print(f"Place with ID {place_id} does not exist or is not indexed to 'pub'.")
+    except Exception as e:
+      print(f"An error occurred while attempting to unindex place with ID {place_id}: {e}")
+      raise  # Re-raise exception to ensure it's caught by Celery
+    return {'place_id': place_id}
+  elif dataset_id:
+    try:
+      dataset = Dataset.objects.get(pk=dataset_id)
+    except Dataset.DoesNotExist:
+      print(f"Dataset with ID {dataset_id} does not exist.")
+      return  # Exit if the dataset is not found
+
+    # Define the query for the delete_by_query operation
+    query = {
+      "query": {
+        "term": {
+          "dataset": dataset.label  # This field should match the field in the ES document
+        }
       }
     }
-  }
 
-  # Perform the delete_by_query operation
-  response = es.delete_by_query(index=idx, body=query, refresh=True)
+    # Perform the delete_by_query operation
+    response = es.delete_by_query(index=idx, body=query, refresh=True)
 
-  # Check response for failures and take necessary actions
-  if response['failures']:  # Check if there are any failures returned in the response
-    print(f"Failures in unindexing: {response['failures']}")
+    # Check response for failures and take necessary actions
+    if response['failures']:  # Check if there are any failures returned in the response
+      print(f"Failures in unindexing: {response['failures']}")
 
-  # Now, update the idx_pub flag for all Place objects of this dataset
-  with transaction.atomic():
-    Place.objects.filter(dataset=dataset).update(idx_pub=False)
+    # Now, update the idx_pub flag for all Place objects of this dataset
+    with transaction.atomic():
+      Place.objects.filter(dataset=dataset).update(idx_pub=False)
 
-  print(f"Unindexing complete. Removed {response['deleted']} documents from index '{idx}'.")
+    place_ids = Place.objects.filter(dataset_id=dataset_id, idx_pub=True).values_list('id', flat=True)
+    return {'place_ids': list(place_ids)}
+
+  print(f"Unindexing complete")
+  # print(f"Unindexing complete. Removed {response['deleted']} documents from index '{idx}'.")
+
+from celery.utils.log import get_task_logger
+logger = get_task_logger(__name__)
+@shared_task()
+def update_idx_pub_flag(results):
+    logger.info(f"Received results for updating idx_pub_flag: {results}")
+    # This task now receives a dictionary with place_id or place_ids
+    place_id = results.get('place_id')
+    place_ids = results.get('place_ids')
+
+    if place_id:
+        logger.info(f"Updating idx_pub for single place with ID: {place_id}")
+        updated_count = Place.objects.filter(id=place_id).update(idx_pub=False)
+        logger.info(f"Updated idx_pub for {updated_count} places with ID: {place_id}")
+    elif place_ids:
+        logger.info(f"Updating idx_pub for multiple places with IDs: {place_ids}")
+        updated_count = Place.objects.filter(id__in=place_ids).update(idx_pub=False)
+        logger.info(f"Updated idx_pub for {updated_count} places with IDs: {place_ids}")
 
 
 """ 
@@ -1396,9 +1448,12 @@ def align_idx(pk, *args, **kwargs):
       new_seeds.append(doc)
       if test == 'off':
         res = es.index(index=idx, id=str(whg_id), document=json.dumps(doc))
-        p.indexed = True
-        p.save()
-        # es.index(idx, doc, id=whg_id)
+        if res['result'] == 'created':  # Check if the document was created successfully
+          p.indexed = True
+          p.save()
+          # trigger unindexing from 'pub', but only if it's also indexed there
+          if p.idx_pub:
+            unindex_from_pub.delay(place_id=p.id, idx='pub')
       
     # got some hits, format json & write to db as for align_wdlocal, etc.
     elif len(result_obj['hits']) > 0:

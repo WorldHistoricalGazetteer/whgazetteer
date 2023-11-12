@@ -22,6 +22,7 @@ from django_celery_results.models import TaskResult
 
 # external
 from celery import current_app as celapp
+from celery import chain
 from copy import deepcopy
 import shutil, sys, tempfile, codecs, math, mimetypes, os, re
 import numpy as np
@@ -49,23 +50,6 @@ from main.models import Log, Comment
 from places.models import *
 from resources.models import Resource
 
-
-# temporary test
-def trigger_index(request, dataset_id):
-    # You can add user permission checks here
-
-    # Check if the dataset exists and is eligible for indexing
-    dataset = get_object_or_404(Dataset, pk=dataset_id, public=True, ds_status__in=['wd-complete', 'accessioning'])
-
-    # Trigger the Celery task
-    task = index_to_pub.delay(dataset_id)
-
-    # Return a response with task details
-    return JsonResponse({
-        'status': 'success',
-        'task_id': task.id,
-        'message': f'Indexing task for dataset {dataset_id} triggered.'
-    })
 
 """
   email various, incl. Celery down notice
@@ -96,7 +80,7 @@ def link_uri(auth,id):
 """
 def indexMatch(pid, hit_pid=None):
   print('indexMatch(): pid '+str(pid)+' w/hit_pid '+str(hit_pid))
-  from elasticsearch7 import Elasticsearch
+  from datasets.tasks import unindex_from_pub, update_idx_pub_flag
   es = settings.ES_CONN
   idx='whg'
   place = get_object_or_404(Place, id=pid)
@@ -181,10 +165,24 @@ def indexMatch(pid, hit_pid=None):
         },
         "query": {"match":{"_id": parent_whgid}}}
       es.update_by_query(index=idx, body=q_update, conflicts='proceed')
-      print('indexed? ', place.indexed)
-    except:
-      print('failed indexing '+str(pid)+' as child of '+str(parent_whgid), new_obj)
-      pass
+
+      print('indexed ', place.indexed)
+    except Exception as e:
+      print('failed indexing ' + str(place.id) + ' as child of ' + str(parent_whgid), new_obj)
+      print(e)
+
+    # Asynchronous chaining of tasks using Celery
+    # if place.idx_pub:
+    #   print('if place.idx_pub', place.id)
+    #   place.idx_pub = False
+    #   place.save()
+      # unindex_from_pub(place_id=place.id, idx='pub')
+      # chain(
+      #   unindex_from_pub.s(place_id=place.id, idx='pub'),
+      #   update_idx_pub_flag.s()
+      # ).apply_async()
+    # else:
+    #   print('not idx_pub:',place.id )
 
 """
   from datasets.views.review()
@@ -315,6 +313,7 @@ def indexMultiMatch(pid, matchlist):
   POST  for each record that got hits, process user matching decisions 
 """
 def review(request, pk, tid, passnum):
+  from datasets.tasks import unindex_from_pub
   pid = None
   if 'pid' in request.GET:
     pid = request.GET['pid']
@@ -569,11 +568,14 @@ def review(request, pk, tid, passnum):
         print('maxID() in review()', maxID(es,'whg'))
         indexMatch(str(place_post.id))
         place_post.indexed = True
+        unindex_from_pub(place_id=place_post.id)
         place_post.save()
       elif len(matched_for_idx) == 1:
         print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched_for_idx[0]))
         indexMatch(str(place_post.id), matched_for_idx[0]['pid'])
         place_post.indexed = True
+        unindex_from_pub(place_id=place_post.id)
+        place_post.idx_pub = False
         place_post.save()
       elif len(matched_for_idx) > 1:
         indexMultiMatch(place_post.id, matched_for_idx)

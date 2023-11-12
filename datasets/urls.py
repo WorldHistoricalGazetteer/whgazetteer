@@ -12,8 +12,6 @@ from datasets.utils import download_file, UpdateCountsView, download_augmented, 
 app_name='datasets'
 urlpatterns = [
 
-  path('trigger-index/<int:dataset_id>/', views.trigger_index, name='trigger_index'),
-
   ## BASICS: create from upload, create empty, delete
   path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
   path('createnew/', views.DatasetCreateView.as_view(), name='dataset-create'),
