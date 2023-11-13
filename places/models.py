@@ -106,21 +106,6 @@ class Place(models.Model):
           models.Index(fields=['src_id', 'dataset']),
         ]
 
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
-from .models import Place
-
-@receiver(pre_save, sender=Place)
-def update_idx_pub_status(sender, instance, **kwargs):
-    # Check if the instance is being updated, i.e., it has an ID
-    if instance.id:
-        # Fetch the current value from the database
-        current = Place.objects.get(id=instance.id)
-        # Check if `indexed` has changed to True and `idx_pub` is True
-        if instance.indexed and not current.indexed and current.idx_pub:
-            # The `indexed` field has changed to True, update `idx_pub` to False
-            instance.idx_pub = False
-
 
 class Type(models.Model):
   aat_id = models.IntegerField(unique=True)

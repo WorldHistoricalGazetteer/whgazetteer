@@ -109,16 +109,6 @@ def indexMatch(pid, hit_pid=None):
     # parents get an incremented _id & whg_id
     new_obj['whg_id']=whg_id
     print('new_obj', new_obj)
-    # sys.exit()
-
-    # add its own names to the suggest field
-    # suggest is deprecated
-    # for n in new_obj['names']:
-    #   new_obj['suggest']['input'].append(n['toponym'])
-    # # add its title
-    # if place.title not in new_obj['suggest']['input']:
-    #   new_obj['suggest']['input'].append(place.title)
-    #index it
     try:
       res = es.index(index=idx, id=str(whg_id), body=json.dumps(new_obj))
       place.indexed = True
@@ -166,6 +156,9 @@ def indexMatch(pid, hit_pid=None):
         },
         "query": {"match":{"_id": parent_whgid}}}
       es.update_by_query(index=idx, body=q_update, conflicts='proceed')
+
+      place.indexed = True
+      place.save()
 
       print('indexed ', place.indexed)
     except Exception as e:
@@ -551,20 +544,17 @@ def review(request, pk, tid, passnum):
 
       # handle accessioning match results
       if len(matched_for_idx) == 0 and task.task_name == 'align_idx':
-        # no matches during accession, index as seed (parent
         print('no accession matches, index '+str(place_post.id)+' as seed (parent)')
         indexMatch(str(place_post.id))
         place_post.indexed = True
-        unindex_from_pub(place_id=place_post.id)
-        place_post.idx_pub = False
         place_post.save()
+        unindex_from_pub.delay(place_id=place_post.id)
       elif len(matched_for_idx) == 1:
         print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched_for_idx[0]))
         indexMatch(str(place_post.id), matched_for_idx[0]['pid'])
         place_post.indexed = True
-        unindex_from_pub(place_id=place_post.id)
-        place_post.idx_pub = False
         place_post.save()
+        unindex_from_pub.delay(place_id=place_post.id)
       elif len(matched_for_idx) > 1:
         indexMultiMatch(place_post.id, matched_for_idx)
         place_post.indexed = True

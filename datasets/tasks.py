@@ -99,22 +99,13 @@ def unindex_from_pub(dataset_id=None, place_id=None, idx='pub'):
 
   if place_id:  # If a place ID is specified, unindex only that place
     try:
+      print('in unindex, on place_id', place_id)
       place = Place.objects.get(pk=place_id, idx_pub=True)
       # Perform the delete operation for the specific place
       response = es.delete(index=idx, id=str(place_id), refresh=True)
 
       # Log the full response for debugging
       print(f"Response from ES delete operation: {response}")
-      # return response
-      # Handle ES response after deletion
-      if response.get('result') == 'deleted':
-        # Update the idx_pub flag for this Place object
-        place.idx_pub = False
-        place.save()
-        # place.save(update_fields=['idx_pub'])
-        print(f"Unindexing complete for Place with ID {place_id}.")
-      else:
-        print(f"Failed to delete document with ID {place_id} from index '{idx}'. Result was: {response.get('result')}")
 
     except Place.DoesNotExist:
       print(f"Place with ID {place_id} does not exist or is not indexed to 'pub'.")
