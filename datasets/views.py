@@ -548,13 +548,13 @@ def review(request, pk, tid, passnum):
         indexMatch(str(place_post.id))
         place_post.indexed = True
         place_post.save()
-        unindex_from_pub.delay(place_id=place_post.id)
+        # unindex_from_pub.delay(place_id=place_post.id)
       elif len(matched_for_idx) == 1:
         print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched_for_idx[0]))
         indexMatch(str(place_post.id), matched_for_idx[0]['pid'])
         place_post.indexed = True
         place_post.save()
-        unindex_from_pub.delay(place_id=place_post.id)
+        # unindex_from_pub.delay(place_id=place_post.id)
       elif len(matched_for_idx) > 1:
         indexMultiMatch(place_post.id, matched_for_idx)
         place_post.indexed = True

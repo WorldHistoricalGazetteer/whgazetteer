@@ -8,7 +8,7 @@ print('in signals.py')
 
 @receiver(pre_save, sender=apps.get_model('places', 'Place'))
 def handle_index_change(sender, instance, **kwargs):
-    logger.info('in Place signal')
+    print('in Place signal')
     from datasets.tasks import unindex_from_pub
     Place = apps.get_model('places', 'Place')
     # If the instance is not in the database yet, it's a new record, so no action is needed.
@@ -25,6 +25,7 @@ def handle_index_change(sender, instance, **kwargs):
 
     # Check if 'indexed' was False and has changed to True
     if not current_place.indexed and instance.indexed:
+        print('in signal, gonna run unindex')
         # Perform the unindex operation synchronously or asynchronously based on your choice.
         # Call the task synchronously using the function signature:
         unindex_from_pub(place_id=instance.pk)
