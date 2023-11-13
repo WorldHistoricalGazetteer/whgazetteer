@@ -103,20 +103,21 @@ def indexMatch(pid, hit_pid=None):
     new_obj['relation']={"name":"parent"}
 
     # increment whg_id
-    print('maxID at :109', maxID(es, idx))
+    print('maxID at :106', maxID(es, idx))
     whg_id = maxID(es, idx) + 1
-    print('whg_id at :111', whg_id)
+    print('whg_id at :108', whg_id)
     # parents get an incremented _id & whg_id
     new_obj['whg_id']=whg_id
     print('new_obj', new_obj)
     # sys.exit()
 
     # add its own names to the suggest field
-    for n in new_obj['names']:
-      new_obj['suggest']['input'].append(n['toponym'])
-    # add its title
-    if place.title not in new_obj['suggest']['input']:
-      new_obj['suggest']['input'].append(place.title)
+    # suggest is deprecated
+    # for n in new_obj['names']:
+    #   new_obj['suggest']['input'].append(n['toponym'])
+    # # add its title
+    # if place.title not in new_obj['suggest']['input']:
+    #   new_obj['suggest']['input'].append(place.title)
     #index it
     try:
       res = es.index(index=idx, id=str(whg_id), body=json.dumps(new_obj))
@@ -170,19 +171,6 @@ def indexMatch(pid, hit_pid=None):
     except Exception as e:
       print('failed indexing ' + str(place.id) + ' as child of ' + str(parent_whgid), new_obj)
       print(e)
-
-    # Asynchronous chaining of tasks using Celery
-    # if place.idx_pub:
-    #   print('if place.idx_pub', place.id)
-    #   place.idx_pub = False
-    #   place.save()
-      # unindex_from_pub(place_id=place.id, idx='pub')
-      # chain(
-      #   unindex_from_pub.s(place_id=place.id, idx='pub'),
-      #   update_idx_pub_flag.s()
-      # ).apply_async()
-    # else:
-    #   print('not idx_pub:',place.id )
 
 """
   from datasets.views.review()
@@ -565,10 +553,10 @@ def review(request, pk, tid, passnum):
       if len(matched_for_idx) == 0 and task.task_name == 'align_idx':
         # no matches during accession, index as seed (parent
         print('no accession matches, index '+str(place_post.id)+' as seed (parent)')
-        print('maxID() in review()', maxID(es,'whg'))
         indexMatch(str(place_post.id))
         place_post.indexed = True
         unindex_from_pub(place_id=place_post.id)
+        place_post.idx_pub = False
         place_post.save()
       elif len(matched_for_idx) == 1:
         print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched_for_idx[0]))
