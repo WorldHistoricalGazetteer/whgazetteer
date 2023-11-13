@@ -1451,9 +1451,10 @@ def align_idx(pk, *args, **kwargs):
         if res['result'] == 'created':  # Check if the document was created successfully
           p.indexed = True
           p.save()
+          unindex_from_pub.delay(place_id=p.id, idx='pub')
           # trigger unindexing from 'pub', but only if it's also indexed there
-          if p.idx_pub:
-            unindex_from_pub.delay(place_id=p.id, idx='pub')
+          # if p.idx_pub:
+          #   unindex_from_pub.delay(place_id=p.id, idx='pub')
       
     # got some hits, format json & write to db as for align_wdlocal, etc.
     elif len(result_obj['hits']) > 0:
