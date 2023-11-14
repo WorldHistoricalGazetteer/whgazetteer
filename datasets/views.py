@@ -97,8 +97,8 @@ def indexMatch(pid, hit_pid=None):
     p_hits = res['hits']['hits']
     place_parent = p_hits[0]['_source']['relation']['parent']
 
+  # there was no match and place is not already indexed
   if hit_pid == None and not p_hits:
-    # there was no match and place is not already indexed
     print('making '+str(pid)+' a parent')
     new_obj['relation']={"name":"parent"}
 
@@ -549,15 +549,14 @@ def review(request, pk, tid, passnum):
         print('no accession matches, index '+str(place_post.id)+' as seed (parent)')
         indexMatch(str(place_post.id))
         place_post.indexed = True
+        place_post.review_whg = 1
         place_post.save()
-        # unindex_from_pub.delay(place_id=place_post.id)
       elif len(matched_for_idx) == 1:
         print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched_for_idx[0]))
         indexMatch(str(place_post.id), matched_for_idx[0]['pid'])
         place_post.indexed = True
         place_post.review_whg = 1
         place_post.save()
-        # unindex_from_pub.delay(place_id=place_post.id)
       elif len(matched_for_idx) > 1:
         indexMultiMatch(place_post.id, matched_for_idx)
         place_post.indexed = True

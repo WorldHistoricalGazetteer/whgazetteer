@@ -2,13 +2,17 @@ from django.apps import apps
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 # from places.models import Place
+import traceback
 import logging
 logger = logging.getLogger(__name__)
 print('in signals.py')
 
 @receiver(pre_save, sender=apps.get_model('places', 'Place'))
 def handle_index_change(sender, instance, **kwargs):
-    print('in Place signal')
+    logger.info(f"Pre-save signal triggered for Place id: {instance.id}")
+    stack_trace = traceback.format_stack()
+    logger.info(f"Call stack leading to save:\n{''.join(stack_trace)}")
+
     from datasets.tasks import unindex_from_pub
     Place = apps.get_model('places', 'Place')
     # If the instance is not in the database yet, it's a new record, so no action is needed.
