@@ -25,12 +25,11 @@ def handle_index_change(sender, instance, **kwargs):
 
     # Check if 'indexed' was False and has changed to True
     if not current_place.indexed and instance.indexed:
-        print('in signal, gonna run unindex')
+        print('in signal, gonna run unindex_from_pub()')
         # Perform the unindex operation synchronously or asynchronously based on your choice.
-        # Call the task synchronously using the function signature:
-        unindex_from_pub(place_id=instance.pk)
+        unindex_from_pub.delay(place_id=instance.pk)
 
         # Update the idx_pub flag to False for the instance.
-        instance.idx_pub = False
+        # instance.idx_pub = False
         # Note: There's no need to save the instance here since the save operation is already in progress.
         # The pre_save signal is just used to perform some action before the actual save happens.

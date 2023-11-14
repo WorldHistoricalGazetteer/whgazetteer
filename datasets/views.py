@@ -112,6 +112,7 @@ def indexMatch(pid, hit_pid=None):
     try:
       res = es.index(index=idx, id=str(whg_id), body=json.dumps(new_obj))
       place.indexed = True
+      # place.idx_pub = False
       place.save()
     except:
       print('failed indexing (as parent)'+str(pid))
@@ -158,6 +159,7 @@ def indexMatch(pid, hit_pid=None):
       es.update_by_query(index=idx, body=q_update, conflicts='proceed')
 
       place.indexed = True
+      # place.idx_pub = False
       place.save()
 
       print('indexed ', place.indexed)
@@ -553,11 +555,13 @@ def review(request, pk, tid, passnum):
         print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched_for_idx[0]))
         indexMatch(str(place_post.id), matched_for_idx[0]['pid'])
         place_post.indexed = True
+        place_post.review_whg = 1
         place_post.save()
         # unindex_from_pub.delay(place_id=place_post.id)
       elif len(matched_for_idx) > 1:
         indexMultiMatch(place_post.id, matched_for_idx)
         place_post.indexed = True
+        place_post.review_whg = 1
         place_post.save()
 
       if ds.unindexed == 0:
@@ -576,9 +580,9 @@ def review(request, pk, tid, passnum):
         status_emailer(ds, 'idx')
         print('sent status email')
 
-      print('review_field', review_field)
-      setattr(place_post, review_field, 1)
-      place_post.save()
+      # print('review_field', review_field)
+      # setattr(place_post, review_field, 1)
+      # place_post.save()
 
       return redirect('/datasets/'+str(pk)+'/review/'+tid+'/'+passnum+'?page='+str(int(page)))
     else:

@@ -96,23 +96,27 @@ def index_to_pub(dataset_id, idx='pub'):
 @shared_task()
 def unindex_from_pub(dataset_id=None, place_id=None, idx='pub'):
   es = settings.ES_CONN
-
-  if place_id:  # If a place ID is specified, unindex only that place
+  if place_id:
     try:
-      print('in unindex, on place_id', place_id)
+      # Check if the place exists and is indexed in 'pub'
       place = Place.objects.get(pk=place_id, idx_pub=True)
       # Perform the delete operation for the specific place
       response = es.delete(index=idx, id=str(place_id), refresh=True)
-
-      # Log the full response for debugging
-      print(f"Response from ES delete operation: {response}")
-
+      # Check if delete operation was successful
+      if response.get('result') != 'deleted':
+        raise Exception("Elasticsearch delete operation failed")
+      else:
+        print('pub record deleted in unindex_from_pub():', place)
+      # Update the idx_pub flag for this Place object
+      place.idx_pub = False
+      place.save()
     except Place.DoesNotExist:
-      print(f"Place with ID {place_id} does not exist or is not indexed to 'pub'.")
+      logger.error(f"Place with ID {place_id} does not exist or is not indexed to 'pub'.")
     except Exception as e:
-      print(f"An error occurred while attempting to unindex place with ID {place_id}: {e}")
+      logger.error(f"An error occurred while attempting to unindex place with ID {place_id}: {e}")
       raise  # Re-raise exception to ensure it's caught by Celery
     return {'place_id': place_id}
+
   elif dataset_id:
     try:
       dataset = Dataset.objects.get(pk=dataset_id)
@@ -1441,19 +1445,19 @@ def align_idx(pk, *args, **kwargs):
         res = es.index(index=idx, id=str(whg_id), document=json.dumps(doc))
         if res['result'] == 'created':  # Check if the document was created successfully
           p.indexed = True
+          p.idx_pub = False
+          # this will trip a signal, running unindex_from_pub()
           p.save()
-          unindex_from_pub.delay(place_id=p.id, idx='pub')
-          # trigger unindexing from 'pub', but only if it's also indexed there
-          # if p.idx_pub:
-          #   unindex_from_pub.delay(place_id=p.id, idx='pub')
+        print('set indexed and idx_pub flags in align_idx() - no hits')
       
     # got some hits, format json & write to db as for align_wdlocal, etc.
     elif len(result_obj['hits']) > 0:
       count_hit +=1  # this record got >=1 hits
-      # set place/task status to 0 (has unreviewed hits)
-      p.review_whg = 0
+      p.review_whg = 0 # (has unreviewed hits)
+      # this will trip a signal, running unindex_from_pub()
       p.save()
-      
+      print('set indexed and idx_pub flags in align_idx() - has hits')
+
       hits = result_obj['hits']
       [count_kids,count_errors] = [0,0]
       total_hits += result_obj['total_hits']
