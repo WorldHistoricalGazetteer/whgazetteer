@@ -1152,7 +1152,7 @@ class UpdateCountsView(View):
 		args in request.GET:
 				[integer] ds_id: dataset id
 		"""
-		ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
+		ds = Dataset.objects.get(id=request.GET.get('ds_id'))
 
 		# deferred counts
 		def defcountfunc(taskname, pids):

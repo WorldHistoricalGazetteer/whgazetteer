@@ -109,73 +109,74 @@
                   </div>
                   <div class="col-sm-6">
                     <p>
-	                    <b>Result</b>: {{ t.result|get:"got_hits"|safe }} of the {{ t.result|get:"count"|safe }}
-	                      records got <b>{{ t.result|get:"total_hits"|safe }}</b> hits in total;
-	                    {% if t.task_name == 'align_idx' %}
-		                    {% with gothits=t.result|get:"got_hits" test=t.task_kwargs|parsejson:"test" %}
-			                    {% if test != 'on' %}
-			                      {{ t.result|get:"count"|subtract:gothits}} were indexed automatically
-			                    {% else %}<br/>
-			                      <span class="text-danger italic">
-				                      {{ t.result|get:"count"|subtract:gothits}} would have been indexed automatically</span>.
-			                    {% endif %}
-		                    {% endwith %}
-	                    {% endif %}
+                    <b>Result</b>: {{ t.result|get:"got_hits"|safe }} of the {{ t.result|get:"count"|safe }}
+                      records got <b>{{ t.result|get:"total_hits"|safe }}</b> hits in total;
+                    {# test or not?#}
+                    {% if t.task_name == 'align_idx' %}
+                        {% with gothits=t.result|get:"got_hits" test=t.task_kwargs|parsejson:"test" %}
+                            {% if test != 'on' %}
+                              {{ t.result|get:"count"|subtract:gothits}} were indexed automatically
+                            {% else %}<br/>
+                              <span class="text-danger italic">
+                                  {{ t.result|get:"count"|subtract:gothits}} would have been indexed automatically</span>.
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
                     </p>
+                    {# display total remaining #}
                     <p class="mb-0">Remaining to review:
-											{# display total remaining only to owners #}
-	                    {% if editorial or user in ds.collaborators %}
+                        {% if editorial or user in ds.collaborators %}
 		                    <span id="{{t.task_id}}_remaining">nn</span>
 	                    {% endif %}
                     </p>
                     <span id="spinner"></span>
                     <ul>
-{#                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners or editorial %}#}
-                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners or editorial %}
-                        <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links):
-                        <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
-                            <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a>
-                          {# auto-accept only for wikidata #}
-                          {% if t.task_name == 'align_wdlocal'%}
-                           <span class="pass0auto">
-                            | <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a>
-                           </span>
-                           <span class="help-matches" data-id="auto-match">
-                             {% fontawesome_icon 'question-circle' color='#993333' %}
-                           </span>
-                          {% endif %}
-
+                    {% if t.task_name == 'align_idx' %}
+                        <li class="li-left">Passes 0, 1:
+                        <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
+                        <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>
                         </li>
-                      {% elif t.task_name == "align_idx" %}
-	                      <li class="li-left">Passes 0, 1:
-                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
-                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>
-                      {% endif %}
-
-                      {% if t.result|get:"pass1" > 0 and t.task_name != "align_idx" or test %}
-	                      <li class="li-left">Pass 1:
-                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
-                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>
-                        </li>
-                      {% endif %}
-
-                      {% if t.result|get:"pass2" > 0 %}
-                        <li class="li-left">Pass 2: 
-                        <span class="strong mx-2" id='{{t.task_id}}_2'>nn</span> 
-                        <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">review</a>
-                        </li>
-                      {% endif %}
-                      
-                      {% if t.result|get:"pass3" > 0 %} <!-- only TGN has pass3 -->
-                        <li class="li-left">Pass 3: <span class="strong mx-2" id='{{t.task_id}}_3'>nn</span> 
-                        <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">review</a></li>
-                      {% endif %}
-                      
-                      <li class="li-left">Deferred: 
+                        <li class="li-left">Deferred:
                         <span class="strong mx-2 hidden" id='{{t.task_id}}_def'>
                         &nbsp;<a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='def' %}">review</a>
                         </span>
-                      </li>
+                        </li>
+                    {% elif t.task_name == 'align_wdlocal'  %}
+                        {# pass0 #}
+                        {% if t.result|get:"pass0" > 0 and user in ds.owners or editorial %}
+                        <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links):
+                            <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span>
+                            <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a>
+                            {% if t.task_name == 'align_wdlocal'%}
+                                 <span class="pass0auto">
+                                    | <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a>
+                                </span>
+                                <span class="help-matches" data-id="auto-match">
+                                 {% fontawesome_icon 'question-circle' color='#993333' %}
+                                </span>
+                            {% endif %}
+                        </li>
+                        {% endif %}
+                        {# pass1 #}
+                        {% if t.result|get:"pass1" > 0 %}
+                            <li class="li-left">Pass 1:
+                            <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
+                            <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>
+                            </li>
+                        {% endif%}
+                        {# pass2 #}
+                        {% if t.result|get:"pass2" > 0 %}
+                            <li class="li-left">Pass 2:
+                            <span class="strong mx-2" id='{{t.task_id}}_2'>nn</span>
+                            <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">review</a>
+                            </li>
+                        {% endif %}
+                        <li class="li-left">Deferred:
+                        <span class="strong mx-2 hidden" id='{{t.task_id}}_def'>
+                        &nbsp;<a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='def' %}">review</a>
+                        </span>
+                        </li>
+                    {% endif %}
                     </ul>
                   </div>
                   <div id="task_logo" class="col-sm-2">
@@ -216,6 +217,7 @@
     startCountsSpinner()
     
     updateTotals('{{ ds.id }}')
+
     if('{{ status }}' == 'updating'){
       {#console.log('{{ status }}','{{ context }}')#}
       $("#ds_info").addClass('hidden')
@@ -269,10 +271,10 @@
           
           $("#"+tid+'_remaining').html(counts['total'])
           $("#"+tid+'_0').html(counts['pass0'])
-	        running_count = (counts['total']-counts['deferred'])
+            running_count = (counts['total']-counts['deferred'])
           if(task=='align_idx'){
-            {#$("#"+tid+'_1').html(counts['total']-counts['deferred'])#}
-            $("#"+tid+'_1').html(counts['pass1']-counts['deferred'])
+            {#$("#"+tid+'_1').html(counts['pass1']-counts['deferred'])#}
+            $("#"+tid+'_1').html(counts['total']-counts['deferred'])
           }
           else {
             $("#"+tid+'_1').html(counts['pass1'])
