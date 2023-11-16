@@ -112,7 +112,6 @@ def indexMatch(pid, hit_pid=None):
     try:
       res = es.index(index=idx, id=str(whg_id), body=json.dumps(new_obj))
       place.indexed = True
-      # place.idx_pub = False
       place.save()
     except:
       print('failed indexing (as parent)'+str(pid))
@@ -159,7 +158,6 @@ def indexMatch(pid, hit_pid=None):
       es.update_by_query(index=idx, body=q_update, conflicts='proceed')
 
       place.indexed = True
-      # place.idx_pub = False
       place.save()
 
       print('indexed ', place.indexed)

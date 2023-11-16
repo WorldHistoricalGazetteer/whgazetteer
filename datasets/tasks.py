@@ -2,6 +2,9 @@
 # align_tgn(), align_wdlocal(), align_idx(), align_whg, make_download
 from __future__ import absolute_import, unicode_literals
 from celery import task, shared_task # these are @task decorators
+from celery.utils.log import get_task_logger
+logger = get_task_logger(__name__)
+
 #from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 from django.conf import settings
@@ -150,8 +153,6 @@ def unindex_from_pub(dataset_id=None, place_id=None, idx='pub'):
   print(f"Unindexing complete")
   # print(f"Unindexing complete. Removed {response['deleted']} documents from index '{idx}'.")
 
-from celery.utils.log import get_task_logger
-logger = get_task_logger(__name__)
 @shared_task()
 def update_idx_pub_flag(results):
     logger.info(f"Received results for updating idx_pub_flag: {results}")
