@@ -1,4 +1,4 @@
-<!-- place/place_relocate.html -->
+<!-- elastic/index_admin.html -->
 {% extends "main/base.html" %}
 {% load fontawesome %}
 {% load static %}
@@ -22,10 +22,10 @@
 			    <a class="nav-link" href="#tab-panel-1" data-toggle="tab">Delete dataset (idx)</a>
 			  </li>
 			  <li class="nav-item">
-			    <a class="nav-link" href="#tab-panel-2" data-toggle="tab">Reorganize parent/child (idx)</a>
+			    <a class="nav-link active" href="#tab-panel-2" data-toggle="tab">Reorganize parent/child (idx)</a>
 			  </li>
 			  <li class="nav-item">
-			    <a class="nav-link active" href="#tab-panel-3" data-toggle="tab">Remote AJAX tests</a>
+			    <a class="nav-link" href="#tab-panel-3" data-toggle="tab">Remote AJAX tests</a>
 			  </li>
 			  <li class="nav-item">
 			    <a class="nav-link" href="#tab-panel-4" data-toggle="tab">Clear children (idx)</a>
@@ -53,22 +53,26 @@
 			  </ul>
 			  </form>
 			</div>
-		  <div class="tab-pane container" id="tab-panel-2">
-{#		    <p>Promote child to parent or relocate to alternate parent</p>#}
+		  <div class="tab-pane container active" id="tab-panel-2">
+				{#<p>Promote child to parent or relocate to alternate parent</p>#}
 			  <div>
 				  <span class="">
 				    <input id="pid_input" class="small" name="pid" placeholder="Enter place_id (pid)">
-				    <button type="button" data-id='fetch' class="b_action btn btn-primary btn-sm">Fetch record</button>
+				    <button type="button" data-id='fetch' class="b_action btn btn-primary btn-sm">
+					    Fetch record</button>
 			    </span>
 				  {# show action buttons after fetch #}
 				  <span id="child_actions" class="hidden ml-2">Child actions:
-				    <button type="button" data-id='promote' class="b_action btn btn-secondary btn-sm">Promote to parent</button>
-				    <button type="button" data-id='relocate' class="b_action btn btn-secondary btn-sm ml-2">Relocate to</button>
+				    <button type="button" data-id='promote' class="b_action btn btn-secondary btn-sm">
+					    Promote to parent</button>
+				    <button type="button" data-id='relocate' class="b_action btn btn-secondary btn-sm ml-2">
+					    Relocate to</button>
 					  <input type="text" id="newparent" name="newparent" placeholder="new parent pid"/>
 			    </span>
-				  <span id="parent_actions" class="hidden ml-2">Parent actions:
+				  <span id="parent_actions" class="ml-2 hidden">Parent actions:
 				    <button type="button" data-id='' class="b_action btn btn-secondary btn-sm ml-2">Demote</button>
-					  <input type="text" id="newparent" name="newparent" placeholder="new parent pid"/> (elevate a child if any)
+					  <input type="text" id="newparent" name="newparent" placeholder="new parent pid"/>
+					  (elevate a child if any)
 			    </span>
 			  </div>
 			  <div class="row mx-0 pt-2">
@@ -92,7 +96,7 @@
 			    </div>
 			  </div> <!-- row d-flex -->
 		  </div>
-		  <div class="tab-pane container active" id="tab-panel-3">
+		  <div class="tab-pane container" id="tab-panel-3">
 			  <div>
 					<p><input id="new_placetitle" class="small" name="dstitle" placeholder="Place title">
 						<input id="dslabel" class="small" name="dslabel" placeholder="Dataset label">
@@ -316,4 +320,3 @@
 </script>
 
 {% endblock %}
-
