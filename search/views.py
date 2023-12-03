@@ -81,6 +81,7 @@ def makeGeom(pid,geom):
 """
 def suggestionItem(s):
   h = s['hit']
+  print('s', s)
   item = {
     "whg_id": h['whg_id'] if 'whg_id' in h else '',
     "pid":h['place_id'],
@@ -312,7 +313,8 @@ class SearchDatabaseView(View):
           "ccodes": place.ccodes,
           "fclasses": place.fclasses,
           "types": [t.jsonb['sourceLabel'] or t.jsonb['src_label'] for t in place.types.all()],
-          "geom": dbsug_geoms(place.geoms.all())
+          "geom": dbsug_geoms(place.geoms.all()),
+          "index": "n/a"
         })
       except:
         print("db sugbuilder error:", place.id, sys.exc_info())

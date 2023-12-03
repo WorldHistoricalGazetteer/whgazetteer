@@ -1,6 +1,6 @@
 # es_utils.py; created 2019-02-07;
 # misc elasticsearch supporting tasks
-# revs: 2021-03; 2020-03; 2019-10-01; 2019-03-05;
+# revs: 2023-12-03; 2021-03; 2020-03; 2019-10-01; 2019-03-05;
 
 from django.conf import settings
 from django.http import JsonResponse
@@ -10,6 +10,61 @@ from elasticsearch7 import Elasticsearch
 es = settings.ES_CONN
 from copy import deepcopy
 import sys
+
+"""
+  adds demoted child place_id and names to parent's children[] and searchy[]
+  rewrites (former) parent's relation field
+  update_parent_and_demote_child(parent_id=12346085, child_place_id=7059037)
+"""
+def update_parent_and_demote_child(parent_id, child_place_id, index='whg'):
+    # Step 1: Fetch the child document using its place_id
+    es = settings.ES_CONN_SERVER
+    child_doc_search = es.search(index=index, body={
+        "query": {
+            "term": {"place_id": child_place_id}
+        },
+        "size": 1
+    })
+
+    if child_doc_search['hits']['total']['value'] == 0:
+        return "Child document not found."
+
+    child_doc = child_doc_search['hits']['hits'][0]['_source']
+    child_doc_id = child_doc_search['hits']['hits'][0]['_id']
+    child_doc['relation'] = {"name": "child", "parent": parent_id}
+    if 'whg_id' in child_doc:
+      del child_doc['whg_id']
+
+    es.index(index=index, id=child_doc_id, body=child_doc, routing=parent_id)
+
+    # Step 2: Update the parent document
+    # 2.1: Add child's place_id to parent's children[]
+    es.update(index=index, id=parent_id, body={
+        "script": {
+            "source": "if (ctx._source.children == null) { ctx._source.children = new ArrayList(); } ctx._source.children.add(params.child_place_id)",
+            "params": {"child_place_id": child_place_id}
+        }
+    })
+
+    # 2.2: Add child's searchy[] values to parent's searchy[]
+    parent_doc_search = es.get(index=index, id=parent_id)
+    if 'searchy' in parent_doc_search['_source']:
+        parent_searchy = parent_doc_search['_source']['searchy']
+    else:
+        parent_searchy = []
+
+    child_doc_searchy = child_doc_search['hits']['hits'][0]['_source'].get('searchy', [])
+    updated_searchy = parent_searchy + child_doc_searchy
+
+    es.update(index=index, id=parent_id, body={
+        "doc": {
+            "searchy": updated_searchy
+        }
+    })
+
+    return "Update and demotion completed successfully."
+# [4608343,91067,6369651,6371576,7059037,227709]
+
 # given pid, gets db and index records
 # called by: elastic/index_admin.html
 #
@@ -358,7 +413,7 @@ from elasticsearch.helpers import bulk
 from django.conf import settings
 from django.db import transaction
 # 7790 to index 2023-11-08
-def indexPublic(idx='pub_20231111'):
+def indexPublic(idx='pub_20231127'):
     es = settings.ES_CONN
     # es.delete_by_query(index='pub', body={"query": {"match_all": {}}})
     from places.models import Place
@@ -367,6 +422,8 @@ def indexPublic(idx='pub_20231111'):
     def make_bulk_doc(place):
         doc = makeDoc(place)
         doc['whg_id'] = ''
+        # initial status
+        doc['status'] = 'pub_only'
         # Add names and title to search field
         searchy_content = set(doc.get('searchy', []))
         searchy_content.update(n['toponym'] for n in doc['names'])
@@ -702,14 +759,15 @@ def fetch_pids(dslabel):
 # query to get a document by place_id
 # ***
 def esq_pid(pid):
-  q = {"bool": {"must": [{"match":{"place_id": pid }}]}}
+  # q = {"match":{"place_id": "91068"}}
+  q = {"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}
   return q
 
 # ***
 # query to get a document by _id
 # ***
 def esq_id(_id):
-  q = {"bool": {"must": [{"match":{"_id": _id }}]}}
+  q = {"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
   return q
 
 # ***
