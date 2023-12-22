@@ -125,7 +125,7 @@ class DatasetCreateEmptyModelForm(forms.ModelForm):
                 fieldname=field.label)}
 
 """
-  DatasetUpload()
+  DatasetUploadForm()
   alternate to DatasetCreateModelForm(); bot-guided
 """
 class DatasetUploadForm(forms.ModelForm):
