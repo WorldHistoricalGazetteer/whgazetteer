@@ -269,20 +269,20 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
       html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you soon.</p>"
     elif test == 'off':
       text_content="Greetings "+username+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
-        task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
+        task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Linking' tab."
       html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
-        "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
+        "<p>View results on the 'Linking' tab (you may have to refresh the page).</p>"
     else:
       text_content="Greetings "+username+"! Your "+tasklabel+" TEST task has completed with status: "+ \
-        task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+".\nRefresh the dataset page and view results on the 'Reconciliation' tab."
+        task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+".\nRefresh the dataset page and view results on the 'Linking' tab."
       html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>TEST "+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
-        "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
+        "<p>View results on the 'Linking' tab (you may have to refresh the page).</p>"
   except:
     print('task lookup in task_emailer() failed on tid', tid, 'how come?')
     text_content="Greetings "+username+"! Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed.\n"+ \
       str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
     html_content_success="<h3>Greetings, "+username+"</h3> <p>Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed. "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
-      "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
+      "<p>View results on the 'Linking' tab (you may have to refresh the page).</p>"
 
   subject, from_email = 'WHG reconciliation result', 'whg@pitt.edu'
   conn = mail.get_connection(

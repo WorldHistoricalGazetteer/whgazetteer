@@ -596,7 +596,7 @@ def write_idx_pass0(request, tid):
 
 """
   write_wd_pass0(taskid)
-  called from dataset_detail>reconciliation tab
+  called from dataset_detail>linking tab
   accepts all pass0 wikidata matches, writes geoms and links
 """
 def write_wd_pass0(request, tid):

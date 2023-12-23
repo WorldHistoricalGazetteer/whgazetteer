@@ -84,7 +84,7 @@ WHG is an open-source project. Please see [this document](docs/contributing_dev.
 
 - _Undo last reconciliation match._ When moving quickly through prospective matches in the reconciliation review task, it is possible to inadvertently save a match; we've added a single step undo of the last action.
 
-- _Dataset management functions consolidated._ Single page with tabs for Metadata, Browse, Reconciliation, Collaboration functionality.
+- _Dataset management functions consolidated._ Single page with tabs for Metadata, Browse, Linking, Collaboration functionality.
 
 ### Software libraries and packages
 
