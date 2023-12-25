@@ -50,7 +50,8 @@ from places.models import *
 from resources.models import Resource
 
 """
-  email various, incl. Celery down notice
+  email on failures: ds_insert_lpf, Celery down notice
+  TODO: add email on success: register
   to ['whgazetteer@gmail.com','karl@kgeographer.org'],
 """
 def emailer(subj, msg, from_addr, to_addr):
@@ -567,7 +568,7 @@ def review(request, pk, tid, passnum):
         setattr(ds, 'ds_status', 'indexed')
         ds.save()
 
-      # if none are left for this task, change status & email staff
+      # if none are left for this task, change status, email user & staff
       if auth in ['wd'] and ds.recon_status['wdlocal'] == 0:
         ds.ds_status = 'wd-complete'
         ds.save()
@@ -1686,7 +1687,6 @@ def ds_insert_lpf(request, pk):
         jdata = json.loads(infile.read())
 
         print('count of features',len(jdata['features']))
-        #print('0th feature',jdata['features'][0])
 
         for feat in jdata['features']:
           # create Place, save to get id, then build associated records for each
@@ -2326,8 +2326,7 @@ def failed_upload_notification(user, fn, ds=None):
       msg += 'on initial validation '
     msg +='-- very sorry about that! ' + \
       '\nWe will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+fn+']'
-    emailer(subj, msg, settings.DEFAULT_FROM_EMAIL,
-            [user.email, settings.EMAIL_HOST_USER])
+    emailer(subj, msg, settings.DEFAULT_FROM_EMAIL, [user.email, settings.EMAIL_HOST_USER])
 
 """
   DatasetCreateView()
@@ -2681,7 +2680,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       )
 
       # data will be written on load of dataset.html w/dsobj.status = 'format_ok'
-      #return redirect('/datasets/'+str(dsobj.id)+'/detail')
+      # email to user, admin
+      emailer('WHG: dataset upload successful', 'Hello '+user.username+',\n\nYour dataset upload was successful. ')
       return redirect('/datasets/'+str(dsobj.id)+'/summary')
 
     else:

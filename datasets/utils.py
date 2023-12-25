@@ -1100,14 +1100,25 @@ def post_recon_update(ds, user, task, test):
 	logobj.save()
 	# print('post_recon_update() logobj',logobj)
 
+
+def get_email_connection():
+	connection = mail.get_connection(
+    host='smtp.sendgrid.net',
+    user='apikey',
+    use_ssl=False,
+    password='SENDGRID_API_KEY',
+    port=587,
+    use_tls=True
+  )
+	return connection
+
 def status_emailer(ds, task_name):
 	try:
 		tasklabel = 'Wikidata' if task_name=='wd' else 'WHG index'
 		text_content="Greetings! A "+tasklabel+" reconciliation task for the dataset "+ds.title+" ("+ds.label+") " \
-		                                                                                                      "has been completed.\nMight be time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
-		             "("+ds.owner.username+")."
+			"has been completed.\nMight be time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+"("+ds.owner.username+")."
 		html_content="<h4>Greetings!</h4> <p>A "+tasklabel+" reconciliation task for the dataset <b>"+ds.title+" ("+ds.label+")</b> " \
-		                                                                                                                     "has been completed.</p><p>Might be time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
+			"has been completed.</p><p>Might be time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
 		             " ("+ds.owner.username+").</p>"
 		if task_name == 'wd':
 			html_content += "<p>A nudge to mention that reconciling to the WHG index is helpful & worthwhile.</p>"
@@ -1121,16 +1132,10 @@ def status_emailer(ds, task_name):
       the index search, database search, and API.</p><p>Best regards,</p<p><i>The WHG Team</i></p>"
 	except:
 		print('status_emailer() failed on dsid', ds.id, 'how come?')
-	subject, from_email = 'WHG dataset status update', settings.DEFAULT_FROM_EMAIL
+	subject, from_email = 'WHG dataset status update', settings.DEFAULT_FROM_EDITORIAL
 	to_email = settings.EMAIL_STATUS_TO if task_name == 'wd' \
 		else settings.EMAIL_STATUS_TO + [ds.owner.email]
-	conn = mail.get_connection(
-		host=settings.EMAIL_HOST,
-		user=settings.EMAIL_HOST_USER,
-		use_ssl=settings.EMAIL_USE_SSL,
-		password=settings.EMAIL_HOST_PASSWORD,
-		port=settings.EMAIL_PORT
-	)
+	conn = get_email_connection()
 	msg = EmailMultiAlternatives(
 		subject,
 		text_content,
@@ -1138,10 +1143,11 @@ def status_emailer(ds, task_name):
 		to_email,
 		connection=conn
 	)
+	msg.bcc('karl.geog@gmail.com')
 	msg.attach_alternative(html_content, "text/html")
 	msg.send(fail_silently=False)
 
-# TODO: faster?
+# TODO: make this faster?
 class UpdateCountsView(View):
 	""" Returns counts of unreviewed records, per pass and total; also deferred per task
 	"""

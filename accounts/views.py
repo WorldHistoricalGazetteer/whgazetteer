@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from django.contrib import auth, messages
@@ -8,6 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.forms import UserModelForm, ProfileModelForm, LoginForm
 from datasets.models import Dataset, DatasetUser
+from datasets.views import emailer
 
 @login_required
 @transaction.atomic
@@ -57,7 +59,6 @@ def register(request):
         User.objects.get(username=request.POST['username'])
         return render(request, 'accounts/register.html', {'error': 'User name is already taken'})
       except User.DoesNotExist:
-        #print('request.POST',request.POST)
         user = User.objects.create_user(
                   request.POST['username'], 
                     password=request.POST['password1'],
@@ -66,9 +67,11 @@ def register(request):
                     last_name=request.POST['last_name']
                 )
         user.profile.affiliation=request.POST['affiliation']
-        #user.profile.user_type=request.POST['user_type']
         user.profile.name=request.POST['name']
         auth.login(request, user)
+        # subj, msg, from_addr, to_addr
+        emailer('New WHG user', '{} ({}, id {}) just registered on the site'.format(user.username, user.profile.name, user.id),
+                settings.DEFAULT_FROM_EMAIL, settings.EMAIL_STATUS_TO)
         return redirect('home')
     else:
       return render(request, 'accounts/register.html', {'error': 'Sorry, password mismatch!'})

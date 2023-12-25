@@ -26,6 +26,7 @@ from collection.models import Collection
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
+from datasets.utils import get_email_connection
 from elastic.es_utils import makeDoc, build_qobj, profileHit
 #from datasets.task_utils import *
 from datasets.utils import bestParent, elapsed, getQ, \
@@ -284,19 +285,13 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
     html_content_success="<h3>Greetings, "+username+"</h3> <p>Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed. "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
       "<p>View results on the 'Linking' tab (you may have to refresh the page).</p>"
 
-  subject, from_email = 'WHG reconciliation result', 'whg@pitt.edu'
-  conn = mail.get_connection(
-    host=settings.EMAIL_HOST,
-    user=settings.EMAIL_HOST_USER,
-    use_ssl=settings.EMAIL_USE_SSL,
-    password=settings.EMAIL_HOST_PASSWORD,
-    port=settings.EMAIL_PORT
-  )
+  subject = 'WHG reconciliation result'
+  conn = get_email_connection()
   # msg=EmailMessage(
   msg = EmailMultiAlternatives(
     subject,
     text_content,
-    from_email,
+    settings.DEFAULT_FROM_EDITORIAL,
     [email],
     connection=conn
   )
