@@ -1,12 +1,43 @@
+# main.utils.py
+
+
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.utils import timezone
+
+from .email_messages import EMAIL_MESSAGES
 from datasets.models import DatasetFile
 from datasets.views import emailer
 
 from datetime import timedelta
 
-send_mail('Got mail?', 'wtaf?', 'whg@pitt.edu', ['karl@kgeographer.org'], fail_silently=False)
+# generic emailer
+def new_emailer(email_type, subject, from_email, to_email, **kwargs):
+	reply_to = kwargs.get('reply_to', None)
+	cc = kwargs.get('cc', None)
+	bcc = kwargs.get('bcc', None)
+
+	# Get the email body from the dictionary
+	email_body = EMAIL_MESSAGES.get(email_type)
+
+	# If the email body is not found, raise an error
+	if email_body is None:
+		raise ValueError('Invalid email type: {}'.format(email_type))
+
+	# Format the email body with the provided kwargs
+	email_body = email_body.format(**kwargs)
+
+	# Create and send the email
+	email = EmailMessage(
+		subject,
+		email_body,
+		from_email,
+		[to_email],
+		reply_to=reply_to,
+		cc=cc,
+		bcc=bcc,
+	)
+	email.send()
 
 def send_maintenance_email():
 	# Fetch recent users.
