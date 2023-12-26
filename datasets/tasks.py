@@ -5,7 +5,6 @@ from celery import task, shared_task # these are @task decorators
 #from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 from django.conf import settings
-from django.core import mail
 from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.db import connection
 from django.db.models import Q
@@ -26,19 +25,13 @@ from collection.models import Collection
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
-from datasets.utils import get_email_connection
 from elastic.es_utils import makeDoc, build_qobj, profileHit
-#from datasets.task_utils import *
 from datasets.utils import bestParent, elapsed, getQ, \
   HitRecord, hully, makeNow, makeDate, parse_wkt, post_recon_update
 
 from main.models import Log
 
-#from places.models import Place
-##
-from elasticsearch7 import Elasticsearch
-
-## global for all es connections in this file?
+# global for all es connections in this file?
 es = settings.ES_CONN
 
 @shared_task(name="testy")
@@ -286,14 +279,12 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
       "<p>View results on the 'Linking' tab (you may have to refresh the page).</p>"
 
   subject = 'WHG reconciliation result'
-  conn = get_email_connection()
-  # msg=EmailMessage(
   msg = EmailMultiAlternatives(
     subject,
     text_content,
     settings.DEFAULT_FROM_EDITORIAL,
     [email],
-    connection=conn
+    connection=settings.EMAIL_CONN
   )
   msg.bcc = ['karl@kgeographer.org']
   msg.attach_alternative(html_content_success if task and task.status == 'SUCCESS' else html_content_fail, "text/html")

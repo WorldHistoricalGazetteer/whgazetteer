@@ -17,7 +17,7 @@ def send_admin_email(sender, instance, **kwargs):
         full_name = instance.user.first_name + ' ' + instance.user.last_name
         id = instance.user.id
         emailer('new WHG user', 'So you know...{} ({}, id {}) just registered on the site'.format(uname, full_name, id ),
-                settings.DEFAULT_FROM_EMAIL, settings.EMAIL_STATUS_TO)
+                settings.DEFAULT_FROM_EMAIL, settings.EMAIL_TO_ADMINS)
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")

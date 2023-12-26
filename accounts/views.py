@@ -71,7 +71,7 @@ def register(request):
         auth.login(request, user)
         # subj, msg, from_addr, to_addr
         emailer('New WHG user', '{} ({}, id {}) just registered on the site'.format(user.username, user.profile.name, user.id),
-                settings.DEFAULT_FROM_EMAIL, settings.EMAIL_STATUS_TO)
+                settings.DEFAULT_FROM_EMAIL, settings.EMAIL_TO_ADMINS)
         return redirect('home')
     else:
       return render(request, 'accounts/register.html', {'error': 'Sorry, password mismatch!'})

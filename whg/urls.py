@@ -51,9 +51,9 @@ urlpatterns = [
     path('tinymce/', include('tinymce.urls')),
 
     path('comment/<int:rec_id>', views.CommentCreateView.as_view(), name='comment-create'),
-    path('contact/', views.contactView, name='contact'),
-    path('success/', views.contactSuccessView, name='success'),
-    path('status/', views.statusView, name='status'),
+    path('contact/', views.contact_view, name='contact'),
+    path('success/', views.contact_success_view, name='success'),
+    path('status/', views.status_view, name='status'),
     
 
     # backend stuff

@@ -1,7 +1,7 @@
 # main.views
 
 from django.conf import settings
-from django.core.mail import send_mail, BadHeaderError
+from django.core.mail import send_mail, BadHeaderError, EmailMessage
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect #, render_to_response
 from django.urls import reverse_lazy
@@ -63,7 +63,7 @@ class Home2b(TemplateView):
         return context
 
 
-def statusView(request):
+def status_view(request):
     context = {"status_site": "??",
                "status_database": "??",
                "status_index": "??"}
@@ -96,7 +96,8 @@ def statusView(request):
     return render(request, "main/status.html", {"context": context})
 
 
-def contactView(request):
+# contact form GET and responder POST
+def contact_view(request):
     print('contact request.GET', request.GET)
     sending_url = request.GET.get('from')
     if request.method == 'GET':
@@ -106,27 +107,44 @@ def contactView(request):
         if form.is_valid():
             human = True
             name = form.cleaned_data['name']
-            username = form.cleaned_data['username'] # hidden input
+            username = form.cleaned_data['username']  # hidden input
             subject = form.cleaned_data['subject']
             from_email = form.cleaned_data['from_email']
-            sender_email = 'whg@pitt.edu'
-            message = name +' ('+username+'; '+from_email+'), on the subject of '+subject+' says: \n\n'+form.cleaned_data['message']
+            whg_email = settings.DEFAULT_FROM_EMAIL
+            message = (name + ' ('+username+'; '+from_email+'), on the subject of ' + subject +
+                       ' says: \n\n'+form.cleaned_data['message'])
             subject_reply = "WHG message received"
-            message_reply = '\nWe received your message concerning "'+subject+'" and will respond soon.\n\n regards,\nThe WHG project team'
+            message_reply = ('Hello\nWe received your message concerning "' + subject +
+                             '" and will respond soon.\n\nregards,\nThe WHG project team')
             try:
-                send_mail(subject, message, sender_email, ["karl@kgeographer.org"])
-                send_mail(subject_reply, message_reply, 'karl@kgeographer.org', [from_email])
+                # deliver form message to admins
+                email = EmailMessage(
+                    subject,  # user-submitted subject
+                    message,  # user-submitted message
+                    whg_email,  # from whg@pitt to admins
+                    settings.EMAIL_TO_ADMINS,  # to admins
+                    reply_to=[from_email],  # reply-to sender
+                )
+                email.send()
+                # deliver 'received' reply to sender
+                email2 = EmailMessage(
+                    subject_reply,  # got it
+                    message_reply,  # will get back to you
+                    whg_email,  # from whg@pitt.edu
+                    [from_email], # to sender
+                    reply_to=[settings.DEFAULT_FROM_EDITORIAL],  # reply-to editorial
+                )
+                email2.send()
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return redirect('/success?return='+sending_url if sending_url else '/')
-            # return redirect(sending_url)
         else:
             print('not valid, why?')
                 
     return render(request, "main/contact.html", {'form': form, 'user': request.user})
 
 
-def contactSuccessView(request, *args, **kwargs):
+def contact_success_view(request, *args, **kwargs):
     returnurl = request.GET.get('return')
     print('return, request', returnurl, str(request.GET))
     return HttpResponse(

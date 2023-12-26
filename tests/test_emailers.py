@@ -20,7 +20,7 @@ def test_failed_upload_notification():
 user = User.objects.get(username='whgadmin')
 emailer('So you know...a new WHG user just registered on the site: {} ({} {}, id {}) '.format(
 	user.username, user.first_name, user.last_name, user.id),
-                settings.DEFAULT_FROM_EMAIL, settings.EMAIL_STATUS_TO)
+                settings.DEFAULT_FROM_EMAIL, settings.EMAIL_TO_ADMINS)
 
 
 # test emailer() in datasets/views.py

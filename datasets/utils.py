@@ -1101,16 +1101,16 @@ def post_recon_update(ds, user, task, test):
 	# print('post_recon_update() logobj',logobj)
 
 
-def get_email_connection():
-	connection = mail.get_connection(
-    host='smtp.sendgrid.net',
-    user='apikey',
-    use_ssl=False,
-    password='SENDGRID_API_KEY',
-    port=587,
-    use_tls=True
-  )
-	return connection
+# def get_email_connection():
+# 	connection = mail.get_connection(
+#     host='smtp.sendgrid.net',
+#     user='apikey',
+#     use_ssl=False,
+#     password='SENDGRID_API_KEY',
+#     port=587,
+#     use_tls=True
+#   )
+# 	return connection
 
 def status_emailer(ds, task_name):
 	try:
@@ -1133,15 +1133,14 @@ def status_emailer(ds, task_name):
 	except:
 		print('status_emailer() failed on dsid', ds.id, 'how come?')
 	subject, from_email = 'WHG dataset status update', settings.DEFAULT_FROM_EDITORIAL
-	to_email = settings.EMAIL_STATUS_TO if task_name == 'wd' \
-		else settings.EMAIL_STATUS_TO + [ds.owner.email]
-	conn = get_email_connection()
+	to_email = settings.EMAIL_TO_ADMINS if task_name == 'wd' \
+		else settings.EMAIL_TO_ADMINS + [ds.owner.email]
 	msg = EmailMultiAlternatives(
 		subject,
 		text_content,
 		from_email,
 		to_email,
-		connection=conn
+		connection=settings.EMAIL_CONN
 	)
 	msg.bcc('karl.geog@gmail.com')
 	msg.attach_alternative(html_content, "text/html")
