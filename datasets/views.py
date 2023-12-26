@@ -2681,7 +2681,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
 
       # data will be written on load of dataset.html w/dsobj.status = 'format_ok'
       # email to user, admin
-      emailer('WHG: dataset upload successful', 'Hello '+user.username+',\n\nYour dataset upload was successful. ')
+      # emailer('WHG: dataset upload successful', 'Hello '+user.username+',\n\nYour dataset upload was successful. ')
       return redirect('/datasets/'+str(dsobj.id)+'/summary')
 
     else:

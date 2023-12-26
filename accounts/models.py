@@ -32,7 +32,11 @@ def send_welcome_email(sender, instance, **kwargs):
         new_emailer('new_user',
                     'New WHG user',
                     settings.DEFAULT_FROM_EMAIL,
-                    settings.EMAIL_TO_ADMINS)
+                    settings.EMAIL_TO_ADMINS,
+                    name=full_name,
+                    username=uname,
+                    id=instance.user.id,
+                    )
 
 # @receiver(post_save, sender=EmailAddress)
 # def send_welcome_email(sender, instance, **kwargs):

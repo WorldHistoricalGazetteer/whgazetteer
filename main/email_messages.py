@@ -1,14 +1,14 @@
 # email body content used with main.utils.new_emailer() throughout the project
-
+# / = done
 # from_email = whg@pitt
 # admins = [Karl, Ali]
 # editor = [Ali]
 # developer = [Karl]
 # reply_to = editor or developer for fails
 
-# welcome: "welcome to WHG -> new user
-# new_user: "new registration" -> admins
-# new_dataset: "thanks for uploading" ->  dataset owner, cc editor, bcc developer
+# / welcome: "welcome to WHG -> new user
+# / new_user: "new registration" -> admins
+# / new_dataset: "thanks for uploading" ->  dataset owner, cc editor, bcc developer
 # failed_upload: "we'll look into it" -> dataset owner, cc developer
 # wikidata_recon_complete: "thanks for reconciling" -> dataset owner, cc editor
 # wikidata_recon_failed: "we'll look into it" -> dataset owner, cc developer
@@ -29,7 +29,7 @@ EMAIL_MESSAGES = {
 	),
 	'new_user': (
 		'Hello there,\n\n'
-		'So you know...{name} ({username}, id {id}) just registered on the site.\n'
+		'So you know...{name} ({username}, id {id}) just registered on the site.\n\n'
 		'regards,\nThe WHG auto emailer bot'
 	),
 	'new_dataset': (
