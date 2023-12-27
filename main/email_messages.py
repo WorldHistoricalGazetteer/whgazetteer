@@ -81,13 +81,13 @@ EMAIL_MESSAGES = {
 	),
 	'contact_form': (
 		'Hello there,\n\n'
-		'{name} ({username}; {email}), on the subject of {subject} says: \n\n'
-		'{message}\n\n'
+		'{name} ({username}; {user_email}), on the subject of {user_subject} says: \n\n'
+		'{user_message}\n\n'
 		'regards,\nThe WHG auto emailer bot'
 	),
 	'contact_reply': (
 		'Hello {name},\n\n'
-		'We received your message concerning "{subject}" and will respond soon.\n\n'
+		'We received your message concerning "{user_subject}" and will respond soon.\n\n'
 		'regards,\nThe WHG project team'
 	),
 	'maintenance': (

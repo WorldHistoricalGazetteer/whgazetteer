@@ -9,6 +9,7 @@ from django.views.generic.base import TemplateView
 from collection.models import Collection
 from datasets.models import Dataset
 from datasets.tasks import testAdd
+from main.utils import new_emailer
 from places.models import Place
 from bootstrap_modal_forms.generic import BSModalCreateView
 
@@ -108,33 +109,35 @@ def contact_view(request):
             human = True
             name = form.cleaned_data['name']
             username = form.cleaned_data['username']  # hidden input
-            subject = form.cleaned_data['subject']
-            from_email = form.cleaned_data['from_email']
-            whg_email = settings.DEFAULT_FROM_EMAIL
-            message = (name + ' ('+username+'; '+from_email+'), on the subject of ' + subject +
-                       ' says: \n\n'+form.cleaned_data['message'])
-            subject_reply = "WHG message received"
-            message_reply = ('Hello\nWe received your message concerning "' + subject +
-                             '" and will respond soon.\n\nregards,\nThe WHG project team')
+            user_subject = form.cleaned_data['subject']
+            user_email = form.cleaned_data['from_email']
+            user_message = form.cleaned_data['message']
+            # message = (name + ' ('+username+'; '+user_email+'), on the subject of ' + user_subject +
+            #            ' says: \n\n'+form.cleaned_data['message'])
             try:
                 # deliver form message to admins
-                email = EmailMessage(
-                    subject,  # user-submitted subject
-                    message,  # user-submitted message
-                    whg_email,  # from whg@pitt to admins
-                    settings.EMAIL_TO_ADMINS,  # to admins
-                    reply_to=[from_email],  # reply-to sender
+                new_emailer(
+                    email_type='contact_form',
+                    subject='Contact form submission',
+                    from_email=settings.DEFAULT_FROM_EMAIL,  # whg@pitt to admins
+                    to_email=settings.EMAIL_TO_ADMINS,  # to admins
+                    reply_to=[user_email],  # reply-to sender
+                    name=name,  # user's name
+                    username=username,  # user's username
+                    user_subject=user_subject,  # user-submitted subject
+                    user_email=user_email,  # user's email
+                    user_message=user_message,  # user-submitted message
                 )
-                email.send()
                 # deliver 'received' reply to sender
-                email2 = EmailMessage(
-                    subject_reply,  # got it
-                    message_reply,  # will get back to you
-                    whg_email,  # from whg@pitt.edu
-                    [from_email], # to sender
+                new_emailer(
+                    email_type='contact_reply',
+                    subject="Message to WHG received",  # got it
+                    from_email=settings.DEFAULT_FROM_EMAIL,  # whg@pitt
+                    to_email=[user_email], # to sender
                     reply_to=[settings.DEFAULT_FROM_EDITORIAL],  # reply-to editorial
+                    name=name,  # user's name
+                    user_subject=user_subject,  # user-submitted subject
                 )
-                email2.send()
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return redirect('/success?return='+sending_url if sending_url else '/')
@@ -143,6 +146,52 @@ def contact_view(request):
                 
     return render(request, "main/contact.html", {'form': form, 'user': request.user})
 
+# def contact_view(request):
+#     print('contact request.GET', request.GET)
+#     sending_url = request.GET.get('from')
+#     if request.method == 'GET':
+#         form = ContactForm()
+#     else:
+#         form = ContactForm(request.POST)
+#         if form.is_valid():
+#             human = True
+#             name = form.cleaned_data['name']
+#             username = form.cleaned_data['username']  # hidden input
+#             subject = form.cleaned_data['subject']
+#             from_email = form.cleaned_data['from_email']
+#             whg_email = settings.DEFAULT_FROM_EMAIL
+#             message = (name + ' ('+username+'; '+from_email+'), on the subject of ' + subject +
+#                        ' says: \n\n'+form.cleaned_data['message'])
+#             subject_reply = "WHG message received"
+#             message_reply = ('Hello\nWe received your message concerning "' + subject +
+#                              '" and will respond soon.\n\nregards,\nThe WHG project team')
+#             try:
+#                 # deliver form message to admins
+#                 email = EmailMessage(
+#                     subject,  # user-submitted subject
+#                     message,  # user-submitted message
+#                     whg_email,  # from whg@pitt to admins
+#                     settings.EMAIL_TO_ADMINS,  # to admins
+#                     reply_to=[from_email],  # reply-to sender
+#                 )
+#                 email.send()
+#                 # deliver 'received' reply to sender
+#                 email2 = EmailMessage(
+#                     subject_reply,  # got it
+#                     message_reply,  # will get back to you
+#                     whg_email,  # from whg@pitt.edu
+#                     [from_email], # to sender
+#                     reply_to=[settings.DEFAULT_FROM_EDITORIAL],  # reply-to editorial
+#                 )
+#                 email2.send()
+#             except BadHeaderError:
+#                 return HttpResponse('Invalid header found.')
+#             return redirect('/success?return='+sending_url if sending_url else '/')
+#         else:
+#             print('not valid, why?')
+#
+#     return render(request, "main/contact.html", {'form': form, 'user': request.user})
+#
 
 def contact_success_view(request, *args, **kwargs):
     returnurl = request.GET.get('return')
