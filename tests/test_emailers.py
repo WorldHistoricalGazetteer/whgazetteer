@@ -37,7 +37,7 @@ class SendDatasetEmailTest(TestCase):
 				print(self.dataset.id)
 				# check if an EmailMessage instance was created with the expected subject, body, and recipient
 				self.assertEqual(len(mail.outbox), 1)
-				self.assertEqual(mail.outbox[0].subject, 'Your dataset has been published')
+				self.assertEqual(mail.outbox[0].subject, 'Your WHG dataset has been published')
 				self.assertEqual(mail.outbox[0].body, 'Dear Test User,\n\n'
 						'Thank you for publishing your dataset, Test Dataset (test_dataset, {}).\n'
 						'It is now publicly viewable, and its records accessible in search and our API .\n\n'
@@ -56,31 +56,13 @@ class SendDatasetEmailTest(TestCase):
 
 			# check if an EmailMessage instance was created with the expected subject, body, and recipient
 			self.assertEqual(len(mail.outbox), 1)
-			self.assertEqual(mail.outbox[0].subject, 'Your dataset is fully indexed')
+			self.assertEqual(mail.outbox[0].subject, 'Your WHG dataset is fully indexed')
 			self.assertEqual(mail.outbox[0].body, 'Dear Test User,\n\n'
-					'Thank you for indexing your dataset, Test Dataset (test_dataset, {}).\n'
-					'All of its records are public, and many of its records are now linked with those for closely '
+					'Thank you for indexing your dataset, Test Dataset (test_dataset, {}).\n\n'
+					'All of its records were already public; now many are linked with those for closely '
 					'matched places coming from other projects.\n\n'
 					'regards,\nThe WHG project team'.format(self.dataset.id))
 
-# test status_emailer(ds, task_name) in datasets/utils.py
-# (wd, idx)
-# def test_status_emailer():
-# 	user = User.objects.get(username='whgadmin')
-# 	emailer(user, 'test.txt')
-# 	assert True
-
-# test failed_upload_notification(user, fn, ds=None) in datasets/views.py
-# def test_failed_upload_notification():
-# 	user = User.objects.get(username='whgadmin')
-# 	failed_upload_notification(user, 'test.txt')
-# 	assert True
-
-# user = User.objects.get(username='whgadmin')
-# emailer('So you know...a new WHG user just registered on the site: {} ({} {}, id {}) '.format(
-# 	user.username, user.first_name, user.last_name, user.id),
-# 								settings.DEFAULT_FROM_EMAIL, settings.EMAIL_TO_ADMINS)
-#
 
 # test emailer() in datasets/views.py
 def test_emailer():

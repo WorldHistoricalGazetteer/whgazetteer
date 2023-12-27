@@ -38,23 +38,6 @@ def send_welcome_email(sender, instance, **kwargs):
                     id=instance.user.id,
                     )
 
-# @receiver(post_save, sender=EmailAddress)
-# def send_welcome_email(sender, instance, **kwargs):
-#     if instance.verified:
-#         uname = instance.user.username
-#         full_name = instance.user.first_name + ' ' + instance.user.last_name
-#         id = instance.user.id
-#         email = EmailMessage(
-#             subject='Welcome to the World Historical Gazetteer',
-#             body='Hello {},\n\nWelcome to the World Historical Gazetteer!'.format(full_name),
-#             from_email=settings.DEFAULT_FROM_EMAIL,
-#             to=[instance.email],
-#             cc=settings.EMAIL_TO_ADMINS,
-#             reply_to=[settings.DEFAULT_FROM_EDITORIAL]
-#         )
-#         emailer('new WHG user', 'So you know...{} ({}, id {}) just registered on the site'.format(uname, full_name, id ),
-#                 settings.DEFAULT_FROM_EMAIL, settings.EMAIL_TO_ADMINS)
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     name = models.TextField(max_length=200, null=False, blank=False)

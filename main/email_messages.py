@@ -1,16 +1,16 @@
 # email body content used with main.utils.new_emailer() throughout the project
-# / = done
+# / = done; * = checked
 # from_email = whg@pitt
 # admins = [Karl, Ali]
 # editor = [Ali]
 # developer = [Karl]
 # reply_to = editor or developer for fails
 
-# / welcome: "welcome to WHG -> new user
-# / new_user: "new registration" -> admins
-# / new_dataset: "thanks for uploading" ->  dataset owner, cc editor, bcc developer
+# /* welcome: "welcome to WHG -> new user
+# /* new_user: "new registration" -> admins
+# /* new_dataset: "thanks for uploading" ->  dataset owner, cc editor, bcc developer
 
-# ***  validate & insert errors to browser ***
+# ***  TODO: validate & insert errors ***
 # failed_upload: "we'll look into it" -> dataset owner, cc developer
 
 # *** TODO: now in task_emailer() ***
@@ -18,12 +18,12 @@
 	# wikidata_recon_failed: "we'll look into it" -> dataset owner, cc developer
 
 # signal on dataset save after status
-# /dataset_published: "thanks for publishing" -> dataset owner, cc admins
+# /*dataset_published: "thanks for publishing" -> dataset owner, cc admins
 # /dataset_indexed: "thanks for indexing" -> dataset owner, cc admins
 
 
-# contact_form: "user says: yada yada" -> admins, reply_to sender
-# contact_reply: "thanks for contacting us" -> sender, cc editor
+# /* contact_form: "user says: yada yada" -> admins, reply_to sender
+# /* contact_reply: "thanks for contacting us" -> sender, cc editor
 
 EMAIL_MESSAGES = {
 	'welcome': (
@@ -74,8 +74,8 @@ EMAIL_MESSAGES = {
 	),
 	'dataset_indexed': (
 		'Dear {name},\n\n'
-		'Thank you for indexing your dataset, {dataset_title} ({dataset_label}, {dataset_id}).\n'
-		'All of its records are public, and many of its records are now linked with those for closely '
+		'Thank you for indexing your dataset, {dataset_title} ({dataset_label}, {dataset_id}).\n\n'
+		'All of its records were already public; now many are linked with those for closely '
 		'matched places coming from other projects.\n\n'
 		'regards,\nThe WHG project team'
 	),
