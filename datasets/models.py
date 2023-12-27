@@ -11,19 +11,15 @@ from django.db.models import Q
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.urls import reverse
-#from django.shortcuts import get_object_or_404
 
 from django_celery_results.models import TaskResult
 from elastic.es_utils import escount_ds
 from geojson import Feature
 from main.choices import *
-# from main.utils import new_emailer
 from places.models import Place, PlaceGeom, PlaceLink
-import simplejson as json
 from shapely.geometry import box, mapping
 
 import logging
-
 logger = logging.getLogger(__name__)
 
 def user_directory_path(instance, filename):
@@ -344,30 +340,3 @@ class DatasetUser(models.Model):
   class Meta:
     managed = True
     db_table = 'dataset_user'
-
-@receiver(post_save, sender=Dataset)
-def send_new_dataset_email(sender, instance, created, **kwargs):
-  try:
-    if created:
-        if not instance.owner.groups.filter(name='whg_team').exists():
-            from main.utils import new_emailer
-            new_emailer(
-                email_type='new_dataset',
-                subject='New Dataset Created',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to_email=settings.EMAIL_TO_ADMINS,
-                name=instance.owner.first_name + ' ' + instance.owner.last_name,
-                username=instance.owner.username,
-                dataset_title=instance.title,
-                dataset_label=instance.label,
-                dataset_id=instance.id
-            )
-  except Exception as e:
-    logger.exception("Error occurred while sending new dataset email")
-
-@receiver(pre_delete, sender=Dataset)
-def remove_files(**kwargs):
-  print('pre_delete remove_files()',kwargs)
-  ds_instance = kwargs.get('instance')
-  files = DatasetFile.objects.filter(dataset_id_id=ds_instance.id)
-  files.delete()

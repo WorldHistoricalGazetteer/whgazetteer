@@ -9,11 +9,19 @@
 # / welcome: "welcome to WHG -> new user
 # / new_user: "new registration" -> admins
 # / new_dataset: "thanks for uploading" ->  dataset owner, cc editor, bcc developer
+
+# ***  validate & insert errors to browser ***
 # failed_upload: "we'll look into it" -> dataset owner, cc developer
-# wikidata_recon_complete: "thanks for reconciling" -> dataset owner, cc editor
-# wikidata_recon_failed: "we'll look into it" -> dataset owner, cc developer
-# dataset_published: "thanks for publishing" -> dataset owner, cc admins
-# dataset_indexed: "thanks for indexing" -> dataset owner, cc admins
+
+# *** TODO: now in task_emailer() ***
+	# wikidata_recon_complete: "thanks for reconciling" -> dataset owner, cc editor
+	# wikidata_recon_failed: "we'll look into it" -> dataset owner, cc developer
+
+# signal on dataset save after status
+# /dataset_published: "thanks for publishing" -> dataset owner, cc admins
+# /dataset_indexed: "thanks for indexing" -> dataset owner, cc admins
+
+
 # contact_form: "user says: yada yada" -> admins, reply_to sender
 # contact_reply: "thanks for contacting us" -> sender, cc editor
 
@@ -67,13 +75,13 @@ EMAIL_MESSAGES = {
 	'dataset_indexed': (
 		'Dear {name},\n\n'
 		'Thank you for indexing your dataset, {dataset_title} ({dataset_label}, {dataset_id}).\n'
-		'All of its records are public, and {index_count} of its records are now linked with those for closely '
+		'All of its records are public, and many of its records are now linked with those for closely '
 		'matched places coming from other projects.\n\n'
 		'regards,\nThe WHG project team'
 	),
 	'contact_form': (
 		'Hello there,\n\n'
-		'{name} ({username}; {from_email}), on the subject of {subject} says: \n\n'
+		'{name} ({username}; {email}), on the subject of {subject} says: \n\n'
 		'{message}\n\n'
 		'regards,\nThe WHG auto emailer bot'
 	),

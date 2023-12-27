@@ -1,6 +1,5 @@
 # main.utils.py
 
-
 from django.contrib.auth.models import User
 from django.core.mail import send_mail, EmailMessage
 from django.utils import timezone
@@ -11,7 +10,7 @@ from datasets.views import emailer
 
 from datetime import timedelta
 
-# generic emailer
+# generic email function, replacing emailer() in datasets/views.py
 def new_emailer(email_type, subject, from_email, to_email, **kwargs):
 	reply_to = kwargs.get('reply_to', None)
 	cc = kwargs.get('cc', None)
