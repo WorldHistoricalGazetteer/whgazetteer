@@ -19,7 +19,7 @@
 
 # signal on dataset save after status
 # /*dataset_published: "thanks for publishing" -> dataset owner, cc admins
-# /dataset_indexed: "thanks for indexing" -> dataset owner, cc admins
+# /*dataset_indexed: "thanks for indexing" -> dataset owner, cc admins
 
 
 # /* contact_form: "user says: yada yada" -> admins, reply_to sender

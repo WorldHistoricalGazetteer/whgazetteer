@@ -116,11 +116,12 @@ def contact_view(request):
             #            ' says: \n\n'+form.cleaned_data['message'])
             try:
                 # deliver form message to admins
+                print('EMAIL_TO_ADMINS', settings.EMAIL_TO_ADMINS)
                 new_emailer(
                     email_type='contact_form',
                     subject='Contact form submission',
                     from_email=settings.DEFAULT_FROM_EMAIL,  # whg@pitt to admins
-                    to_email=settings.EMAIL_TO_ADMINS,  # to admins
+                    to_email=settings.EMAIL_TO_ADMINS,  # to editor
                     reply_to=[user_email],  # reply-to sender
                     name=name,  # user's name
                     username=username,  # user's username

@@ -40,6 +40,7 @@ def send_dataset_email(sender, instance, **kwargs):
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     to_email=[instance.owner.email],
                     reply_to=[settings.DEFAULT_FROM_EDITORIAL],
+                    bcc=[settings.DEFAULT_FROM_EDITORIAL],
                     name=instance.owner.get_full_name(),
                     dataset_title=instance.title,
                     dataset_label=instance.label,

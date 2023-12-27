@@ -12,6 +12,7 @@ from datetime import timedelta
 
 # generic email function, replacing emailer() in datasets/views.py
 def new_emailer(email_type, subject, from_email, to_email, **kwargs):
+	print('new_emailer() called, to_email', to_email)
 	reply_to = kwargs.get('reply_to', None)
 	cc = kwargs.get('cc', None)
 	bcc = kwargs.get('bcc', None)
@@ -31,7 +32,7 @@ def new_emailer(email_type, subject, from_email, to_email, **kwargs):
 		subject,
 		email_body,
 		from_email,
-		[to_email],
+		to_email,
 		reply_to=reply_to,
 		cc=cc,
 		bcc=bcc,
