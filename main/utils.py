@@ -1,7 +1,7 @@
 # main.utils.py
 
 from django.contrib.auth.models import User
-from django.core.mail import send_mail, EmailMessage
+from django.core.mail import send_mail, EmailMessage, EmailMultiAlternatives
 from django.utils import timezone
 
 from .email_messages import EMAIL_MESSAGES
@@ -18,17 +18,17 @@ def new_emailer(email_type, subject, from_email, to_email, **kwargs):
 	bcc = kwargs.get('bcc', None)
 
 	# Get the email body from the dictionary
-	email_body = EMAIL_MESSAGES.get(email_type)
+	email_body = EMAIL_MESSAGES.get(email_type).format(**kwargs)
 
 	# If the email body is not found, raise an error
 	if email_body is None:
 		raise ValueError('Invalid email type: {}'.format(email_type))
 
 	# Format the email body with the provided kwargs
-	email_body = email_body.format(**kwargs)
+	html_message = email_body.replace('\n', '<br>')
 
 	# Create and send the email
-	email = EmailMessage(
+	email = EmailMultiAlternatives(
 		subject,
 		email_body,
 		from_email,
@@ -37,6 +37,7 @@ def new_emailer(email_type, subject, from_email, to_email, **kwargs):
 		cc=cc,
 		bcc=bcc,
 	)
+	email.attach_alternative(html_message, "text/html")
 	email.send()
 
 def send_maintenance_email():

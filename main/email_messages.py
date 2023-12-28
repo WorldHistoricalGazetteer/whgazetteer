@@ -26,15 +26,25 @@
 # /* contact_reply: "thanks for contacting us" -> sender, cc editor
 
 EMAIL_MESSAGES = {
-	'welcome': (
-		'Hello {name},\n\n'
-		'Welcome to the World Historical Gazetteer!\n\n'
-		'The WHG is a free, open-access resource for researcher, educators, '
-		'and anyone studying or teaching about the past.\n'
-		'We hope you will find it useful, and we welcome your contributions.\n\n'
-		'If you have any questions, please contact our editor at {reply_to}\n\n'
-		'regards,\nThe WHG project team'
-	),
+	'welcome': ('Greetings! \n\n'
+	'Thank you for registering for the World Historical Gazetteer (WHG). You can visit '
+	            '<a href="https://whgazetteer.org/tutorials/guide/">the WHG site guide</a> '
+	            'to learn more about services and features the platform provides.\n\n'
+	'WHG is gathering contributions of place data—large and small, and for all regions and historical periods. '
+	            'WHG provides services for geocoding place names, linking records for "closely matched" places, '
+	            'and on request, publishing contributed datasets and user-created collections. '
+	            'WHG is an excellent resource for teachers and students. Teachers can use its place information '
+	            'to develop lessons and to make custom maps for presentation in lectures. \n\n'
+	            'The "Place Collection" feature enables building and publishing sets of user-annotated place records, '
+	            'accompanied by an explanatory essay, image, and links to external resources. '
+	            'The WHG "union index" of place attestations drawn from multiple contributed datasets will over time '
+	            'increasingly link the disparate research of contributors on the dimension of place. '
+	            'Furthermore, by bringing together all the known references for a place without privileging '
+	            'any particular one, it decenters colonial name making.\n\n'
+	'We are accepting dataset and place collection contributions, which can be published on the site. '
+	'If you would like to set up a consultation to discuss these in more detail, just reply to this message\n\n'
+	'regards,\nThe WHG project team'
+	 ),
 	'new_user': (
 		'Hello there,\n\n'
 		'So you know...{name} ({username}, id {id}) just registered on the site.\n\n'
@@ -106,3 +116,14 @@ EMAIL_MESSAGES = {
 	),
 	# Add more email bodies as needed
 }
+
+# (
+# 		'Hello {name},\n\n'
+# 		'Welcome to the World Historical Gazetteer!\n\n'
+# 		'The WHG is a free, open-access resource for researcher, educators, '
+# 		'and anyone studying or teaching about the past.\n'
+# 		'We hope you will find it useful, and we welcome your contributions.\n\n'
+# 		'If you have any questions, please contact our editor at {reply_to}\n\n'
+# 		'regards,\nThe WHG project team'
+# 	)
+
