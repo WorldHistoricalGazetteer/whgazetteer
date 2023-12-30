@@ -5,7 +5,9 @@ from django.utils.safestring import mark_safe
 from main.models import Comment
 from main.choices import COMMENT_TAGS, COMMENT_TAGS_REVIEW
 from bootstrap_modal_forms.forms import BSModalForm
-from captcha.fields import CaptchaField
+# from captcha.fields import CaptchaField
+from django_recaptcha.fields import ReCaptchaField
+from django_recaptcha.widgets import ReCaptchaV2Checkbox
 
 class ContactForm(forms.Form):
     name = forms.CharField(
@@ -22,7 +24,7 @@ class ContactForm(forms.Form):
         widget=forms.TextInput(attrs={'size': 50}),
         required=True)
     message = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}), required=True)
-    captcha = CaptchaField()
+    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox)
 
 class CommentModalForm(BSModalForm):
     class Meta:

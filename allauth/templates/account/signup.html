@@ -1,5 +1,4 @@
 {% extends "main/base.html" %}
-
 {% load i18n %}
 
 {% block head_title %}{% trans "Register" %}{% endblock %}
@@ -10,7 +9,8 @@
       <div>
         <h3>{% trans "Register" %}</h3>
         
-        <p>{% blocktrans %}Already have an account? Please <a href="{{ login_url }}">log in</a>.{% endblocktrans %}</p>
+        <p>{% blocktrans %}Already have an account? Please
+	        <a href="{{ login_url }}">log in</a>.{% endblocktrans %}</p>
         {% if form.errors %}
           {% for field in form %}
               {% for error in field.errors %}
@@ -26,7 +26,7 @@
           {% endfor %}
         {% endif %}
         <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
-          {% csrf_token %}
+{#          {% csrf_token %}#}
           <!--{ form.as_p }}-->
           {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
@@ -70,17 +70,16 @@
           </table>
           <hr/>
           <p>
-            <label for="id_captcha_1"></label> 
-              <img class="captcha" alt="captcha" src="" />
-            <input id="id_captcha_0" type="hidden" name="captcha_0" value="" required >
-            <input id="id_captcha_1" type="text" name="captcha_1" required autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
-            <span class="ml-2"><a href="#" class="captcha smaller">refresh</a></span>
-          </p>        
+					<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+					<div class="g-recaptcha" data-sitekey="6Le0z0ApAAAAAL0d9AGEKF4R8w112yxweral4hq9"></div>
+          </p>
+          {% csrf_token %}
           <button type="submit">{% trans "Register" %} &raquo;</button>
         </form>
       </div>
     </div>
   </div>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script type="text/javascript">
   $(function() {
     $.getJSON("/captcha/refresh/", function (result) {

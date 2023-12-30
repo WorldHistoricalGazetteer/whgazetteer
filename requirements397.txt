@@ -61,9 +61,10 @@ django-leaflet==0.24.0
 django-mathfilters==0.4.0
 django-multiselectfield==0.1.12
 django-ranged-response==0.2.0
+django-recaptcha==3.0.0
 django-resized==0.3.11
 django-shapeshifter==18.9.23
-django-simple-captcha==0.5.13
+# django-simple-captcha==0.5.13
 django-tables2==2.3.4
 django-templated-mail==1.1.1
 django-timezone-field==4.0

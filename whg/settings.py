@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django_extensions',
     'django_filters',
+    'django_recaptcha',
     'django_resized',
     'django_tables2',
     'django_user_agents',

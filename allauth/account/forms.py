@@ -10,7 +10,10 @@ from django.core import exceptions, validators
 from django.urls import reverse
 from django.utils.translation import gettext, gettext_lazy as _, pgettext
 
-from captcha.fields import CaptchaField
+# from captcha.fields import CaptchaField
+from django_recaptcha.fields import ReCaptchaField
+from django_recaptcha.widgets import ReCaptchaV2Checkbox
+
 
 from ..utils import (
     build_absolute_uri,
@@ -430,7 +433,7 @@ class WHGRegisterForm(SignupForm):
     last_name = forms.CharField(max_length=30, label='Last Name')
     #affiliation = forms.CharField(max_length=256, label='Affiliation')
     #web_page = forms.URLField(label='Web page')
-    captcha = CaptchaField(label='foo')
+    captcha = ReCaptchaField(label='foo')
     
     def signup(self, request, user):
         user.first_name = self.cleaned_data['first_name']
