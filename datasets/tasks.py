@@ -884,7 +884,7 @@ def align_wdlocal(pk, **kwargs):
 
     # types (Getty AAT integer ids if available)
     for t in place.types.all():
-      if t.jsonb['identifier'].startswith('aat:'):
+      if 'identifier' in t.jsonb and t.jsonb['identifier'].startswith('aat:'):
         types.append(int(t.jsonb['identifier'].replace('aat:','')) )
     qobj['placetypes'] = types
 
