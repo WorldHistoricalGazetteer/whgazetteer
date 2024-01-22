@@ -24,6 +24,18 @@ class SendDatasetEmailTest(TestCase):
 						ds_status='uploaded'
 				)
 
+		def test_send_email_on_setup(self):
+			# Check if an EmailMessage instance was created
+			self.assertEqual(len(mail.outbox), 1)
+
+			# Check the subject and body of the email
+			self.assertEqual(mail.outbox[0].subject, 'New Dataset Created')
+			self.assertEqual(mail.outbox[0].body, 'So you know...the user {} ({}) has created a new dataset, '
+			                                      '{} ({}, {}).\n\n'
+			                                      'regards,\nThe WHG auto emailer bot'.format(
+			  self.user.get_full_name(), self.user.username, self.dataset.title,
+			  self.dataset.label, self.dataset.id))
+
 		def test_send_dataset_email_public(self):
 				# Clear the outbox before saving the dataset
 				mail.outbox = []
