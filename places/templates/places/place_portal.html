@@ -92,7 +92,8 @@
           {% endif %}
           <b>{{ rec.title }}</b>
           <span class="ml-2">
-            dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">
+            dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" 
+                        title="Dataset Profile" data-content="" tabindex="0" rel="clickover">
 	              {{rec.dataset.name|truncatechars:25}}</a>
           <span class="float-right">
             <a href="#" data-id="{{ rec.place_id }}" class="create-comment mr-2" rel="tooltip" title="create note">
