@@ -35,7 +35,7 @@
     <form id="form_related" method="POST" action="" >
     {% csrf_token %}
     {{ formset.management_form }}
-    {% for record in records %} 
+    {% for record in records %}
     <!-- there is only one; if last, do nothing -->
     <div class="container">
       <div id="review_nav" class="row pagination justify-content-center">
@@ -48,8 +48,8 @@
         <span>
           <button type="submit" id="btn_save" class="button-sm mr-2">Save</button>
           {% if deferred is False %}
-          <a id="defer_link" rel="tooltip" 
-            title="flag for separate review" class="small" 
+          <a id="defer_link" rel="tooltip"
+            title="flag for separate review" class="small"
             href="{% url 'places:defer-review' pid=record.id auth=authority last=records.paginator.num_pages  %}">defer</a>
           {% endif %}
           <span class="step-links">
@@ -104,17 +104,17 @@
               {% endfor %}</p>
             {% endif %}
             {% if record.related.all|length > 0 %}
-            <p><strong>Relations</strong>: 
+            <p><strong>Relations</strong>:
               {% for rel in record.related.all %}
                 {{ rel.jsonb.label }}; <!--({ rel.jsonb.relationType }); -->
               {% endfor %}</p>
             {% endif %}
             <p><strong>Place type(s)</strong>:
               {% for type in record.types.all %}
-                {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label }}); 
+                {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label }});
               {% endfor %}</p>
             {% if record.links.all|length > 0 %}
-            <p><strong>Links</strong>: 
+            <p><strong>Links</strong>:
               {% for link in record.links.all %}
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
               {% endfor %}</p>
@@ -129,9 +129,9 @@
             {% endif %}
 
             {% if record.descriptions %}
-              <p><strong>Description</strong>: 
+              <p><strong>Description</strong>:
               {% for d in record.descriptions.all %}
-              {{d.jsonb.value}}; 
+              {{d.jsonb.value}};
               {%endfor%}</p>
             {% endif %}
           </div> <!-- place_record -->
@@ -197,19 +197,19 @@
 	              {% endfor %}
 	            </p>
 
-              {% if form.json.value|get:"links"|length > 0 %} 
-                <p><strong>All concordances</strong>: 
+              {% if form.json.value|get:"links"|length > 0 %}
+                <p><strong>All concordances</strong>:
                 {% for link in form.json.value|get:"links" %}
                   <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
                 {% endfor %}
               </p>{% endif %}
-              
-              
-              {% if form.json.value|get:"minmax"|length > 0 %} 
-                <p><strong>Temporal attestations</strong>: 
+
+
+              {% if form.json.value|get:"minmax"|length > 0 %}
+                <p><strong>Temporal attestations</strong>:
                 {{ form.json.value|get:"minmax" }}</p>
               {% endif %}
-              
+
               <!--{ if form.json.value|get:"descriptions"|length > 0 %} -->
                 <!--<p class="mb-0"><strong>Description(s)</strong>:</p> -->
                 <!--<div>-->
@@ -217,7 +217,7 @@
                   <!--<p>({d.lang}}) { d.text }}</p>{ endfor %}-->
                 <!--</div>-->
               <!--{ endif %}-->
-              
+
             </div>
           {% endfor %}
         </div> <!-- review_list -->
@@ -237,7 +237,7 @@
   placeid = $('script').filter(function() {
     return this.id.match("placeid")
   }).text()
-    
+
   // capture pid for place just reviewed
   // https://catalogue.bnf.fr/ark:/12148/cb11942741p
   $(".help").click(function(){
@@ -262,7 +262,7 @@
     show: {effect: "fade",duration: 400 },
     hide: {effect: "fade",duration: 400 }
    });
-   
+
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
@@ -283,7 +283,7 @@
 
   var ds = "{{ ds_label }}"+':'
   var pass = document.location.pathname.slice(-5)
-  
+
   $("#btn_save").click(function(){
     current_place = $('input[name=place_id]').val()
     sessionStorage.setItem('reviewBegun',true)
@@ -314,21 +314,21 @@
     $('.textarea').html('')
     z=window.location.href
     $('#passnum_dynamic').html('<b>'+z.slice(-6)+'</b>')
-    
+
     $(".create-comment").each(function () {
       var recpk = $(this).data('id');
       uribase="/comment/"+recpk
       next='?next='+"{% url 'datasets:review' pk=ds_id tid=task_id passnum=passnum %}"
       $(this).modalForm({formURL: uribase+next});
     });
-    
+
     $("[rel='tooltip']").tooltip();
     var hideAllPopovers = function() {
        $('.pop-dataset').each(function() {
             $(this).popover('hide');
-        });  
+        });
     };
-  
+
     var dspop = $(".pop-dataset").popover({
       trigger: 'focus',
       placement: 'right',
@@ -349,17 +349,17 @@
           }
       });
     })
-    
+
   })
-            
+
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
     var token_mb = '{{ mbtoken }}',
     mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
-      
+
     var satellite  = L.tileLayer(mbstyle_url, {
-      id:'mapbox/satellite-streets-v11', 
+      id:'mapbox/satellite-streets-v11',
       token:token_mb}),
     osm  = L.tileLayer(mbstyle_url, {
       id:'mapbox/light-v10',
@@ -438,10 +438,10 @@
     function markerIt(src_ds) {
       if(src_ds == ds){
         style = {radius: 8, fillOpacity: 0.4, opacity: 1, weight: 1,
-              color: "#333", fillColor: "green"}        
+              color: "#333", fillColor: "green"}
       } else {
         style = {radius: 8, fillOpacity: 0.4, opacity: 1, weight: 1,
-              color: "#333", fillColor: "orange"}      
+              color: "#333", fillColor: "orange"}
       }
       return style
     }
