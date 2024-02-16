@@ -6,6 +6,7 @@ latest: 2.2.28 (2021)
 import os
 from celery.schedules import crontab
 from django.contrib.messages import constants as messages
+from logging.handlers import RotatingFileHandler
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -171,6 +172,25 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'whg.wsgi.application'
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': 'whg/logs/debug.log',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#     },
+# }
 
 LOGGING = {
     'version': 1,

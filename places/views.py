@@ -105,8 +105,8 @@ class PlacePortalView(DetailView):
       ds = Dataset.objects.get(id=place.dataset.id)
       # ds = get_object_or_404(Dataset,id=place.dataset.id)
       # temporally scoped attributes
-      names = attribListFromSet('names',place.names.all())
-      types = attribListFromSet('types',place.types.all())
+      names = attribListFromSet('names', place.names.all())
+      types = attribListFromSet('types', place.types.all())
 
       # collections, not traces 20220425
       # get traces, collections for this attestation

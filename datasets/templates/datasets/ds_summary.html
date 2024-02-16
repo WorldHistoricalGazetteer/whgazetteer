@@ -314,8 +314,11 @@
                 <!-- lpf originally -->
                 {% elif links_added > 0 or geoms_added > 0 %} 
                   <!-- offer dl if augmented -->
-                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format {% fontawesome_icon 'download'%}</a> (augmented) <span id="file_lpf" class="ml-1"></span></p>
-                  <p class="mt-2"><i>LP-TSV conversion is not possible for this LPF dataset. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded in Linked Places format (LPF) has one&#8209;to&#8209;many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title=""><i title="" class="fa fa-question-circle" style="color:#336699;"></i></a></i></p>
+                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format {% fontawesome_icon 'download'%}</a> (augmented)
+	                  <span id="file_lpf" class="ml-1"></span></p>
+                  <p class="mt-2"><i>LP-TSV conversion is not possible for this LPF dataset.
+	                  <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded in Linked Places format (LPF) has one&#8209;to&#8209;many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title=""><i title="" class="fa fa-question-circle" style="color:#336699;"></i></a></i>
+                  </p>
                 {% else %}
                   <!-- originally lpf, not yet augmented -->
                   <p><i>Dataset is not yet augmented</i></p>
