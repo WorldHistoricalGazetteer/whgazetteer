@@ -320,7 +320,9 @@ def profileHit(hit):
     if len(src['links'])>0 else None
   profile['countries'] = ccDecode(src['ccodes'])
   profile['variants'] = [n['toponym'] for n in src['names']]
-  profile['types'] = [t['sourceLabel'] for t in src['types']]
+  profile['types'] = [t['sourceLabel'] if 'sourceLabel' in t else t['source_label']
+    if 'source_label' in t else '' for t in src['types']]
+  # profile['types'] = [t['sourceLabel'] for t in src['types']]
   profile['related'] = [r['label'] for r in src['relations']]
   if len(src['descriptions']) > 0:
     profile['descriptions'] = [d['value'] for d in src['descriptions']]

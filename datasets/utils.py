@@ -44,7 +44,6 @@ def downloadLP7(request):
 	return response
 
 # initiate celery tasks for dataset downloads
-# TODO: add download Collection capability Apr 2022
 def downloader(request, *args, **kwargs):
 	user = request.user
 	print('request.user', request.user)
