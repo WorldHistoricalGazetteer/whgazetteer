@@ -8,6 +8,12 @@ from celery.schedules import crontab
 from django.contrib.messages import constants as messages
 from logging.handlers import RotatingFileHandler
 
+try:
+  SECRET_KEY
+except NameError:
+  SECRET_KEY = os.getenv('SECRET_KEY', 'secret')
+
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
