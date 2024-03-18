@@ -559,7 +559,7 @@ def removePlacesFromIndex(es, idx, pids):
             delthese.append(pid)
           except:
             print('update of new parent failed',sys.exit(sys.exc_info()))
-          # parent status transfered to 'eligible' child, add to list
+          # parent status transferred to 'eligible' child, add to list
           print('parent w/kids, '+pid +' transferred resp to: '+newparent+' & was tagged for deletion')
       elif role == 'child':
         # get its parent and remove its id from parent's children

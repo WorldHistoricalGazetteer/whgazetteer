@@ -187,7 +187,7 @@ def deleteFromIndex(pids):
             es.update_by_query(index=idx,body=q_update)
           except:
             print('aw shit',sys.exit(sys.exc_info()))
-          # parent status transfered to 'eligible' child, add to list
+          # parent status transferred to 'eligible' child, add to list
           print('parent w/kids '+hit['_source']['title'],pid+' transferred resp to: '+parent+'; tagged for deletion')
           delthese.append(pid)
       elif role == 'child':

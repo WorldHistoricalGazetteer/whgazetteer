@@ -95,7 +95,7 @@ It is possible to stand up a functioning instance of the WHG codebase, and propo
 
 - Instructions for this are found in _docs/cloning/cloning.md_
 - It will be necessary to 
-  - run PostgreSQL locally, and use a Python virtual environmnet (3.9.7) loaded up with everything in req397.txt
+  - run PostgreSQL locally, and use a Python virtual environment (3.9.7) loaded up with everything in req397.txt
   - build the database tables with _makemigrations_ and _migrate_ commands
 
   - add some dummy data from SQL files so the home page displays

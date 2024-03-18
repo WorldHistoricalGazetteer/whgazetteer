@@ -135,7 +135,7 @@
                 <tr class="align-top">
                 <td>{{ d.title }}&nbsp;
                   <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a><br/>
-                  <span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>
+                  <span class="ml-2 small" style="display:block"><i>est. download time: {{d.dl_est}}</i></span>
                 </td>
                 <td>{{d.numrows}}</td>
                 <td> <!-- always offer lpf -->

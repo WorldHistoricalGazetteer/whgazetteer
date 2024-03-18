@@ -230,7 +230,7 @@ def make_download(request, *args, **kwargs):
       result={"type":"FeatureCollection",
               "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
               "filename": "/"+fn,
-              "decription": ds.description,
+              "description": ds.description,
               "features":features}
 
       outfile.write(json.dumps(result, indent=2).replace('null', '""'))
@@ -723,7 +723,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   #   }
   # }
 
-  # somthing to try?
+  # something to try?
   # # Add a match query for each variant to the nested bool query
   # for variant in variants:
   #   qbase["query"]["bool"]["must"][0]["bool"]["should"].append(

@@ -316,7 +316,7 @@ class AccountTests(TestCase):
 
         reset_pass_url = resp.url
 
-        # Accesing the url via a different session
+        # Accessing the url via a different session
         resp = self.client_class().get(reset_pass_url)
 
         # We should receive the token_fail context_data
@@ -504,7 +504,7 @@ class AccountTests(TestCase):
             )
             # is_active is controlled by the admin to manually disable
             # users. I don't want this flag to flip automatically whenever
-            # users verify their email adresses.
+            # users verify their email addresses.
             self.assertTrue(
                 get_user_model()
                 .objects.filter(username="johndoe", is_active=True)

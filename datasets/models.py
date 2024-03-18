@@ -228,7 +228,7 @@ class Dataset(models.Model):
   @property
   def taskstats(self):
     def distinctPlaces(task):
-      # counts of distinct place records remaining to review fo reach pass
+      # counts of distinct place records remaining to review for each pass
       p_hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values("place_id").distinct().count()
       p_hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values("place_id").distinct().count()
       p_hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values("place_id").distinct().count()
