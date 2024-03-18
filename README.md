@@ -23,7 +23,7 @@ WHG is an open-source project. Please see [this document](docs/contributing_dev.
 - Revamped search functionality: option to search database as well as index; filter results by type, country, map bounding box; return to results from place pages
 - Public views for datasets, collections, and individual records
 - Dataset and Collection maps now using MapLibreGL, for fast rendering of large datasets
-- Reliablity and error reporting for upload functions improved
+- Reliability and error reporting for upload functions improved
 - Rewritten documentation; new tutorial on LP-TSV creation and new sample lesson plan
 - SSL (https) enabled
 - Formation of an editorial team has begun
