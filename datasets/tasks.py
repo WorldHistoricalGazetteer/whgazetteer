@@ -696,42 +696,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     }
   }}
 
-  # BEGIN ALTERNATE qbase, 19 Aug 2023
-  # qbase = {
-  #   "query": {
-  #     "bool": {
-  #       "must": [],
-  #       "should": [
-  #         {
-  #           "terms": {
-  #             "variants.names": variants,  "boost": 3
-  #           }
-  #         },
-  #         {
-  #           "terms": {
-  #             "variants.names.text": variants
-  #           }
-  #         },
-  #         {
-  #           "terms": {
-  #             "variants.names.edge_ngram": variants
-  #           }
-  #         }
-  #       ],
-  #       "filter": []
-  #     }
-  #   }
-  # }
-
-  # somthing to try?
-  # # Add a match query for each variant to the nested bool query
-  # for variant in variants:
-  #   qbase["query"]["bool"]["must"][0]["bool"]["should"].append(
-  #     # {"match": {"variants.names": {"query": variant, "fuzziness": "AUTO"}}}
-  #     {"match_phrase": {"variants.names": {"query": variant}}}
-  #   )
-  # END ALTERNATE, 04 Aug 2023
-
   # ADD SPATIAL
   if has_geom:
     # shape_filter is polygon hull ~100km diameter
@@ -759,13 +723,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 
   # Create a copy of qbase for q2
   q2 = deepcopy(qbase)
-
-  # BEGIN FOR ALTERNATE TEST
-  # For variants.names as a text field (wd_text index)
-  # Add a prefix query for anything starting with first 5 characters (w/spatial constraint)
-  # q2['query']['bool']['must'][0]['bool']['should'].append(
-  #   {"prefix": {"variants.names": {"value": qobj['title'][:5]}}})
-  # END FOR ALTERNATE TEST
 
   # Adds weight but not required
   if len(qtypes) > 0:
@@ -1372,9 +1329,12 @@ def align_idx(pk, *args, **kwargs):
           hitobj['countries'].extend([','.join(k['countries']) for k in kids])
           
           # unnest
-          hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
-          hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
-          
+          # TODO: hotfix 20 Mar 24 ... why was this necessary?
+          if 'geoms' in hitobj.keys() and hitobj['geoms'] is not None:
+            hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
+          if 'links' in hitobj.keys() and hitobj['links'] is not None:
+              hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
+
           # add kids to parent in sources
           hitobj['sources'].extend(
             [{'dslabel':k['dataset'],

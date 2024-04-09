@@ -693,27 +693,27 @@ def confirm(prompt=None, resp=False):
 # create an index
 # ***
 def esInit(idx):
-  idx='wd_text'
+  idx='wdgn_20240316'
   import os, codecs
   from django.conf import settings
+  es = settings.ES_CONN_SERVER
   os.chdir('elastic/mappings/')
-  es = settings.ES_CONN
-  file = codecs.open('wd2023_multi.json', 'r', 'utf8').read()
+  file = codecs.open('wdgn_202403.json', 'r', 'utf8').read()
   mappings = ''.join(line for line in file if not '/*' in line)
   # zap existing if exists, re-create
-  if confirm(prompt='Zap index '+idx+'?', resp=False):
-    try:
-      es.indices.delete(index=idx)
-    except Exception as ex:
-      print(ex)
-    try:
-      es.indices.create(index=idx, ignore=400, body=mappings)
-      es.indices.put_alias('wd_text', 'wd')
-    except Exception as ex:
-      print(ex)
-    print ('index "'+idx+'" created')
-  else:
-    print('oh, okay')
+  # if confirm(prompt='Zap index '+idx+'?', resp=False):
+  #   try:
+  #     es.indices.delete(index=idx)
+  #   except Exception as ex:
+  #     print(ex)
+  try:
+    es.indices.create(index=idx, ignore=400, body=mappings)
+    es.indices.put_alias(index='wdgn_20240316', name='wdgn')
+  except Exception as ex:
+    print(ex)
+  print ('index "'+idx+'" created')
+  # else:
+  #   print('oh, okay')
 
 # ***
 # called from makeDoc()

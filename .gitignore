@@ -53,6 +53,7 @@ local_settings.py
 *.log
 *.pot
 *.pyc
+debug.*
 __pycache__/
 whg/__pycache__/
 whg/logs/

@@ -149,7 +149,7 @@
 
             {% if record.descriptions %}
               {% for d in record.descriptions.all %}
-              <p><strong>Description</strong>: {{d.jsonb.value}}</p>
+              <p><strong>Description</strong>: {{d.jsonb.value|readmore:200|safe}}</p>
               {%endfor%}
             {% endif %}
           </div>
@@ -202,7 +202,7 @@
                     {{ g|safe|json_script:g.id }}
                   {% endfor %}
                 {% endif %}
-                <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
+	              <p><strong>Title/Preferred</strong>:<span class="text-danger h6">{{ form.json.value|get:"title" }}</span></p>
                 {% if authority|startswith:'whg' %}
                   <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p> 
                   <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
@@ -212,7 +212,8 @@
                   {% else %}
                   <p><strong>{{ authority|upper }} ID</strong>: 
                   {% endif %}
-                  <a href="" data-auth={{authority}} class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a>{% fontawesome_icon 'external-link' color='#336699' %}
+                  <a href="" data-auth="{{authority}}" class="mr-2 ext-recon">{{ form.authrecord_id.value }}</a>
+                    {% fontawesome_icon 'external-link' color='#336699' %}
                   </p>
                 {% endif %}
                 
@@ -284,6 +285,20 @@
 </div>
 
 <script type="text/javascript">
+    $(".a_more_descrip").click(function(e){
+      clicked = $(this)
+      clicked.hide()
+      clicked.parent().find("#dots").hide()
+      clicked.next().show()
+      $(".a_less_descrip").show()
+    })
+    $(".a_less_descrip").click(function(e){
+      clicked = $(this)
+      clicked.hide() // hide 'less' link
+      $(".more_descrip").hide() // hide the extra text again
+      $("#dots").show() // show dots again
+      $(".a_more_descrip").show() // show more link again
+    })
   $(".help-matches").click(function(){
     page=$(this).data('id')
     $('.selector').dialog('open');

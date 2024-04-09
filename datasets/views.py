@@ -1964,6 +1964,7 @@ def ds_insert_tsv(request, pk):
           if 'types' in header else []
         aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
           if 'aat_types' in header else []
+        print('aat_types', aat_types)
         parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
         parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
         coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
