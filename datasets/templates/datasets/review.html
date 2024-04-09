@@ -37,7 +37,7 @@
           <option value="pass3">PASS 3&nbsp;</option>{% endif %}
       </select>
 	    {% for m in messages %}{{ m }}{% endfor %}
-    {% endif %} 
+    {% endif %}
     </span>
     <span class="help-matches" data-id="review">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
     <span class="half float-right mr-2"><i>task id</i>: {{ task_id|truncatechars:10 }}...</span>
@@ -45,7 +45,7 @@
   </div> <!-- .row -->
   {% if nohits and passnum == 'def' %}
       <p>No unreviewed records remaining in "deferred" queue</p>
-      <p><a href="{% url 'datasets:ds_reconcile' id=ds_id %}">return to task list</a></p>    
+      <p><a href="{% url 'datasets:ds_reconcile' id=ds_id %}">return to task list</a></p>
   {% elif nohits and authority != 'idx' %}
     <div class="mt-3">
       <p>All records in this dataset for this task have been reviewed, so the dataset is eligible for accessioning to the WHG index.</p> <p>If you would like to begin that process, please <a href="{% url 'contact' %}">contact the editorial team</a>.</p>
@@ -55,7 +55,7 @@
     <form id="form_related" method="POST" action="" >
     {% csrf_token %}
     {{ formset.management_form }}
-    {% for record in records %} 
+    {% for record in records %}
     <!-- there is only one; if last, do nothing -->
     <div class="container">
       <div id="review_nav" class="pagination row justify-content-center">
@@ -123,7 +123,7 @@
               {% endfor %}</p>
             {% endif %}
             {% if record.related.all|length > 0 %}
-            <p><strong>Relations</strong>: 
+            <p><strong>Relations</strong>:
               {% for rel in record.related.all %}
                 {{ rel.jsonb.label }}; <!--({ rel.jsonb.relationType }); -->
               {% endfor %}</p>
@@ -133,7 +133,7 @@
                 {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label }});
               {% endfor %}</p>
             {% if record.links.all|length > 0 %}
-            <p><strong>Links</strong>: 
+            <p><strong>Links</strong>:
               {% for link in record.links.all %}
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
               {% endfor %}</p>
@@ -172,9 +172,9 @@
                   {% if form.json.value|get:"geoms"|length > 0 %}
                     <span class="mr-2 globeflash">
                     <!--{ if form.json.value|get:"geoms" != Null }-->
-                      <a class="geolink" rel="tooltip" 
+                      <a class="geolink" rel="tooltip"
                         {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}
-                          id="{{ form.json.value|get:'place_id' }}" 
+                          id="{{ form.json.value|get:'place_id' }}"
                         {% else %}
                           id="{{ form.authrecord_id.value }}"
                         {% endif %}
@@ -184,8 +184,8 @@
                   {% endif %}
                   <span class="inline">{{ form.match }}</span>
                   {% if authority == 'idx' %}
-                    <button type="button" 
-                      data-id="{{ form.json.value|get:'place_id' }}" 
+                    <button type="button"
+                      data-id="{{ form.json.value|get:'place_id' }}"
                       class="create-comment-review btn btn-sm" style="background-color:oldlace;">
                     {% fontawesome_icon 'edit' color='#336699' %}</button>
                   {% else %}
@@ -202,27 +202,28 @@
                     {{ g|safe|json_script:g.id }}
                   {% endfor %}
                 {% endif %}
-                <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
+	              <p><strong>Title/Preferred</strong>:<span class="text-danger h6">{{ form.json.value|get:"title" }}</span></p>
                 {% if authority|startswith:'whg' %}
-                  <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p> 
+                  <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p>
                   <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
                 {% else %}
                   {% if authority|startswith:"wd" %}
-                  <p><strong>Wikidata ID</strong>: 
+                  <p><strong>Wikidata ID</strong>:
                   {% else %}
-                  <p><strong>{{ authority|upper }} ID</strong>: 
+                  <p><strong>{{ authority|upper }} ID</strong>:
                   {% endif %}
-                  <a href="" data-auth="{{authority}}" class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a>{% fontawesome_icon 'external-link' color='#336699' %}
+                  <a href="" data-auth="{{authority}}" class="mr-2 ext-recon">{{ form.authrecord_id.value }}</a>
+                    {% fontawesome_icon 'external-link' color='#336699' %}
                   </p>
                 {% endif %}
-                
-                {% if form.json.value|get:"variants"|length > 0 %} 
+
+                {% if form.json.value|get:"variants"|length > 0 %}
                 <p class="scroll65"><strong>Variants</strong>:
                   {% for n in form.json.value|get:"variants" %}
                     {{ n|add:"; " }}
                   {% endfor %}
                 </p>{% endif %}
-                
+
                 <p class="mt-2 strong">Types:
                 {% if authority == 'whg' %}
                   {% for t in form.json.value|get:"types" %}
@@ -235,35 +236,35 @@
                   {{ form.json.value|get:"types"}}
                   {% endif %}
                 {% endif %}
-                
+
                 {% if form.json.value|get:"links"|length > 0 %}
-                  <p><strong>Links</strong>: 
+                  <p><strong>Links</strong>:
                   {% for link in form.json.value|get:"links" %}
                     <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
                   {% endfor %}
                 </p>{% endif %}
 
                 {% if form.json.value|get:"parents" %}
-                  <p><strong>Parents</strong>: 
+                  <p><strong>Parents</strong>:
                   {{ form.json.value|get:"parents" }}
                 {% elif form.json.value|get:"ccodes" %}
                   <p><strong>Modern country</strong>:
                     {{ form.json.value|get:"ccodes" }}
                 {% endif %}
 
-                {% if form.json.value|get:"minmax"|length > 0 %} 
-                  <p><strong>Temporal attestations</strong>: 
+                {% if form.json.value|get:"minmax"|length > 0 %}
+                  <p><strong>Temporal attestations</strong>:
                   {{ form.json.value|get:"minmax" }}</p>
                 {% endif %}
-                
-                {% if form.json.value|get:"descriptions"|length > 0 %} 
+
+                {% if form.json.value|get:"descriptions"|length > 0 %}
                 <!--{ if form.json.value|get:"descriptions" != null %} -->
-                  <p class="mb-0"><strong>Description(s)</strong>:</p> 
+                  <p class="mb-0"><strong>Description(s)</strong>:</p>
                   <div class="attest-element abbrev small">
                   {% for d in form.json.value|get:"descriptions" %}
                     ({{d.lang}}) {{ d.text }}{% endfor %}
                   </div>
-                {% endif %}                
+                {% endif %}
               </div>
             {% endfor %}
           </div>
@@ -284,20 +285,20 @@
 </div>
 
 <script type="text/javascript">
-  $(".a_more_descrip").click(function(e){
-    clicked = $(this)
-    clicked.hide()
-    clicked.parent().find("#dots").hide()
-    clicked.next().show()
-    $(".a_less_descrip").show()
-  })
-  $(".a_less_descrip").click(function(e){
-    clicked = $(this)
-    clicked.hide() // hide 'less' link
-    $(".more_descrip").hide() // hide the extra text again
-    $("#dots").show() // show dots again
-    $(".a_more_descrip").show() // show more link again
-  })  
+    $(".a_more_descrip").click(function(e){
+      clicked = $(this)
+      clicked.hide()
+      clicked.parent().find("#dots").hide()
+      clicked.next().show()
+      $(".a_less_descrip").show()
+    })
+    $(".a_less_descrip").click(function(e){
+      clicked = $(this)
+      clicked.hide() // hide 'less' link
+      $(".more_descrip").hide() // hide the extra text again
+      $("#dots").show() // show dots again
+      $(".a_more_descrip").show() // show more link again
+    })
   $(".help-matches").click(function(){
     page=$(this).data('id')
     $('.selector').dialog('open');
@@ -305,7 +306,7 @@
   $(".selector").dialog({
     resizable: true,
     autoOpen: false,
-    width: $(window).width() * 0.8, 
+    width: $(window).width() * 0.8,
     height: $(window).height() * 0.9,
     title: "WHG Help",
     modal: true,
@@ -320,7 +321,7 @@
     show: {effect: "fade",duration: 400 },
     hide: {effect: "fade",duration: 400 }
    });
-   
+
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
@@ -388,15 +389,15 @@
 
     $("[rel='tooltip']").tooltip();
   })
-            
+
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
       var token_mb = '{{ mbtoken }}',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
-      
+
     var satellite  = L.tileLayer(mbstyle_url, {
-      id:'mapbox/satellite-streets-v11', 
+      id:'mapbox/satellite-streets-v11',
       token:token_mb}),
     osm  = L.tileLayer(mbstyle_url, {
       id:'mapbox/light-v10',
@@ -509,7 +510,7 @@
           marker.on('click', function(){
             console.log('clicked marker w/id',feature.properties.id)
             // .matchbar background change, scroll to it
-            // first, background to #fff for all 
+            // first, background to #fff for all
             $('.match_radio').css('background','oldlace')
             divy = $('.match_radio[data-id='+feature.properties.id+']')
             divy.css('background','yellow')
@@ -536,4 +537,3 @@
 </script>
 <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
 {% endblock %}
-

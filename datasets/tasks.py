@@ -38,10 +38,10 @@ es = settings.ES_CONN
 def testy():
   print("I'm testy...who wouldn't be?")
 
-""" 
+"""
   called by utils.downloader()
   builds download file, retrieved via ajax JS in ds_summary.html, ds_meta.html,
-  ds_log.html 
+  ds_log.html
   collection_detail.html (modal), place_collection_browse.html (modal)
 """
 # TODO: ?? make this a DRF call with serializer and prefetch
@@ -324,19 +324,19 @@ def reverse(coords):
 def maxID(es,idx):
   q={"query": {"bool": {"must" : {"match_all" : {}} }},
        "sort": [{"whg_id": {"order": "desc"}}],
-       "size": 1  
+       "size": 1
        }
   try:
     res = es.search(index=idx, body=q)
     maxy = int(res['hits']['hits'][0]['_source']['whg_id'])
   except:
       maxy = 12345677
-  return maxy 
+  return maxy
 
 def parseDateTime(string):
   year = re.search("(\d{4})-",string).group(1)
   if string[0] == '-':
-    year = year + ' BCE' 
+    year = year + ' BCE'
   return year.lstrip('0')
 
 def ccDecode(codes):
@@ -403,15 +403,15 @@ def normalize_whg(hits):
     cluster={
       "whg_id": par["_id"],
       "titles": titles,
-      "countries":list(set(countries)), 
-      "links":list(set(links)), 
+      "countries":list(set(countries)),
+      "links":list(set(links)),
       "geoms":[],
       "sources":[]
     }
     result.append(cluster)
   return result.toJSON()
-    
-    
+
+
 # normalize hit json from any authority
 # language relevant only for wikidata local)
 def normalize(h, auth, userTitle, language=None):
@@ -422,23 +422,23 @@ def normalize(h, auth, userTitle, language=None):
     #_id = hit['_id']
     # build a json object, for Hit.json field
     rec = HitRecord(
-      h['place_id'], 
+      h['place_id'],
       h['dataset'],
-      h['src_id'], 
+      h['src_id'],
       h['title']
     )
     #print('"rec" HitRecord',rec)
     rec.score = hit['_score']
     rec.passnum = hit['pass'][:5]
-    
+
     # only parents have whg_id
     if 'whg_id' in h:
       rec.whg_id = h['whg_id']
-    
+
     # add elements if non-empty in index record
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
     # TODO: fix grungy hack (index has both src_label and sourceLabel)
-    key = 'src_label' if 'src_label' in h['types'][0] else 'sourceLabel'      
+    key = 'src_label' if 'src_label' in h['types'][0] else 'sourceLabel'
     rec.types = [t['label']+' ('+t[key]  +')' if t['label']!=None else t[key] \
                 for t in h['types']] if len(h['types']) > 0 else []
     # TODO: rewrite ccDecode to handle all conditions coming from index
@@ -452,21 +452,21 @@ def normalize(h, auth, userTitle, language=None):
       rec.parents = []
 
     rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
-    
+
     rec.geoms = [{
       "type":h['geoms'][0]['location']['type'],
       "coordinates":h['geoms'][0]['location']['coordinates'],
       "id":h['place_id'],
         "ds":"whg"}] \
-      if len(h['geoms'])>0 else []   
-    
+      if len(h['geoms'])>0 else []
+
     rec.minmax = dict(sorted(h['minmax'].items(),reverse=True)) if len(h['minmax']) > 0 else []
-    
+
     # TODO: deal with whens
     #rec.whens = [parseWhen(t) for t in h['timespans']] \
                 #if len(h['timespans']) > 0 else []
     rec.links = [l['identifier'] for l in h['links']] \
-                if len(h['links']) > 0 else []    
+                if len(h['links']) > 0 else []
   elif auth == 'wd':
     try:
       # locations and links may be multiple, comma-delimited
@@ -482,7 +482,7 @@ def normalize(h, auth, userTitle, language=None):
           #links.append('closeMatch: '+l)
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['place']['value'][31:], h['placeLabel']['value'])
-      #print('"rec" HitRecord',rec)      
+      #print('"rec" HitRecord',rec)
       rec.variants = []
       rec.types = h['types']['value'] if 'types' in h.keys() else []
       rec.ccodes = [h['countryLabel']['value']]
@@ -492,7 +492,7 @@ def normalize(h, auth, userTitle, language=None):
       rec.minmax = []
       rec.inception = parseDateTime(h['inception']['value']) if 'inception' in h.keys() else ''
     except:
-      print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())    
+      print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())
   elif auth == 'wdlocal':
     # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims',
     # 'sitelinks', 'variants', 'minmax', 'types', 'location']
@@ -514,12 +514,12 @@ def normalize(h, auth, userTitle, language=None):
           if n != title:
             v_array.append(n+'@'+v['lang'])
       rec.variants = v_array
-            
+
       if 'location' in h.keys():
         # single MultiPoint geometry
         loc = h['location']
         loc['id'] = h['id']
-        loc['ds'] = 'wd'        
+        loc['ds'] = 'wd'
         # single MultiPoint geom if exists
         rec.geoms = [loc]
 
@@ -535,14 +535,14 @@ def normalize(h, auth, userTitle, language=None):
         cchash[0][c]['gnlabel'] for c in cchash[0] \
           if cchash[0][c]['wdid'] in h['claims']['P17']
       ]
-      
+
       # include en + native lang if not en
       rec.descriptions = wdDescriptions(h['descriptions'], language) \
         if 'descriptions' in h.keys() else []
-      
+
       # not applicable
       rec.parents = []
-      
+
       # no minmax in hit if no inception value(s)
       rec.minmax = [h['minmax']['gte'],h['minmax']['lte']] \
         if 'minmax' in h else []
@@ -566,7 +566,7 @@ def normalize(h, auth, userTitle, language=None):
         "coordinates":h['location']['coordinates'],
         "id":h['tgnid'],
           "ds":"tgn"}]
-    else: 
+    else:
       rec.geoms=[]
     rec.minmax = []
     rec.links = []
@@ -578,7 +578,7 @@ def normalize(h, auth, userTitle, language=None):
 # ***
 # elasticsearch filter from Area (types: predefined, ccodes, drawn)
 # e.g. {'type': ['drawn'], 'id': ['128']}
-# called from: es_lookup_tgn(), es_lookup_idx(), es_lookup_wdlocal(), search.SearchView(), 
+# called from: es_lookup_tgn(), es_lookup_idx(), es_lookup_wdlocal(), search.SearchView(),
 # FUTURE: parse multiple areas
 # ***
 def get_bounds_filter(bounds, idx):
@@ -586,7 +586,7 @@ def get_bounds_filter(bounds, idx):
   id = bounds['id'][0]
   #areatype = bounds['type'][0]
   area = Area.objects.get(id = id)
-  # 
+  #
   # geofield = "geoms.location" if idx == 'whg' else "location"
   geofield = "geoms.location" if idx == 'whg' else "location"
   filter = { "geo_shape": {
@@ -597,7 +597,7 @@ def get_bounds_filter(bounds, idx):
         },
         "relation": "intersects" if idx=='whg' else 'within' # within | intersects | contains
       }
-  }} 
+  }}
   return filter
 
 
@@ -622,8 +622,8 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 
   # empty result object
   result_obj = {
-    'place_id': qobj['place_id'], 
-    'hits':[],'missed':-1, 'total_hits':-1}  
+    'place_id': qobj['place_id'],
+    'hits':[],'missed':-1, 'total_hits':-1}
 
   # names (distinct, w/o language)
   variants = list(set(qobj['variants']))
@@ -634,10 +634,10 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   qtypes = [t[3:] for t in getQ(qobj['placetypes'],'types')]
 
   # PREP SPATIAL
-  
+
   # if no ccodes, returns []
   countries = [t[3:] for t in getQ(qobj['countries'],'ccodes')]
-  
+
   has_bounds = bounds['id'] != ['0']
   has_geom = 'geom' in qobj.keys()
   has_countries = len(countries) > 0
@@ -666,8 +666,8 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   # incoming qobj['authids'] might include
   # a wikidata identifier matching an index _id (Qnnnnnnn)
   # OR an id match in wikidata authids[] e.g. gn:, tgn:, pl:, bnf:, viaf:
-  # 
-  q0 = {"query": { 
+  #
+  q0 = {"query": {
     "bool": {
       "must": [
         {"bool": {
@@ -696,42 +696,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     }
   }}
 
-  # BEGIN ALTERNATE qbase, 19 Aug 2023
-  # qbase = {
-  #   "query": {
-  #     "bool": {
-  #       "must": [],
-  #       "should": [
-  #         {
-  #           "terms": {
-  #             "variants.names": variants,  "boost": 3
-  #           }
-  #         },
-  #         {
-  #           "terms": {
-  #             "variants.names.text": variants
-  #           }
-  #         },
-  #         {
-  #           "terms": {
-  #             "variants.names.edge_ngram": variants
-  #           }
-  #         }
-  #       ],
-  #       "filter": []
-  #     }
-  #   }
-  # }
-
-  # somthing to try?
-  # # Add a match query for each variant to the nested bool query
-  # for variant in variants:
-  #   qbase["query"]["bool"]["must"][0]["bool"]["should"].append(
-  #     # {"match": {"variants.names": {"query": variant, "fuzziness": "AUTO"}}}
-  #     {"match_phrase": {"variants.names": {"query": variant}}}
-  #   )
-  # END ALTERNATE, 04 Aug 2023
-
   # ADD SPATIAL
   if has_geom:
     # shape_filter is polygon hull ~100km diameter
@@ -743,7 +707,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     # matches ccodes
     qbase['query']['bool']['must'].append(countries_match)
 
-  """ 
+  """
     q1 = qbase + types a must IF ANY
     q1 = qbase + fclasses a must IF ANY
   """
@@ -760,13 +724,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   # Create a copy of qbase for q2
   q2 = deepcopy(qbase)
 
-  # BEGIN FOR ALTERNATE TEST
-  # For variants.names as a text field (wd_text index)
-  # Add a prefix query for anything starting with first 5 characters (w/spatial constraint)
-  # q2['query']['bool']['must'][0]['bool']['should'].append(
-  #   {"prefix": {"variants.names": {"value": qobj['title'][:5]}}})
-  # END FOR ALTERNATE TEST
-
   # Adds weight but not required
   if len(qtypes) > 0:
     q2['query']['bool']['should'].append({"terms": {"types.id": qtypes}})
@@ -775,7 +732,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     q2['query']['bool']['should'].append({"terms": {"fclasses": qobj['fclasses']}})
 
   # /\/\/\/\/\/
-  # pass0 (q0): 
+  # pass0 (q0):
   # must[authid]; match any link
   # /\/\/\/\/\/
   try:
@@ -791,7 +748,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       result_obj['hits'].append(hit)
   elif len(hits0) == 0:
     # /\/\/\/\/\/
-    # pass1 (q1): 
+    # pass1 (q1):
     # must[name, placetype]; spatial filter
     # /\/\/\/\/\/
     print('no q0 hits...q1',q1)
@@ -810,7 +767,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     elif len(hits1) == 0:
       # /\/\/\/\/\/
       # pass2: remove type; qbase only
-      # /\/\/\/\/\/  
+      # /\/\/\/\/\/
       print('no q1 hits, q2',q2)
       try:
         res2 = es.search(index="wd", body = q2)
@@ -911,7 +868,7 @@ def align_wdlocal(pk, **kwargs):
       qobj['geom'] = hully(g_list)
       # make a representative_point for ES distance
       #qobj['repr_point'] = pointy(g_list)
-      
+
 
     # 'P1566':'gn', 'P1584':'pleiades', 'P244':'loc', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'
     # links
@@ -920,14 +877,14 @@ def align_wdlocal(pk, **kwargs):
       qobj['authids'] = l_list
     else:
       qobj['authids'] = []
-      
+
     # TODO: ??? skip records that already have a Wikidata record in l_list
     # they are returned as Pass 0 hits right now
     # run pass0-pass2 ES queries
     #print('qobj in align_wd_local()',qobj)
-    
+
     result_obj = es_lookup_wdlocal(qobj, bounds=bounds)
-      
+
     if result_obj['hit_count'] == 0:
       count_nohit +=1
       nohits.append(result_obj['missed'])
@@ -941,11 +898,11 @@ def align_wdlocal(pk, **kwargs):
       print("result_obj['hits']", result_obj['hits'])
       for hit in result_obj['hits']:
         #print('pre-write hit', hit)
-        if hit['pass'] == 'pass0': 
-          count_p0+=1 
-        if hit['pass'] == 'pass1': 
-          count_p1+=1 
-        elif hit['pass'] == 'pass2': 
+        if hit['pass'] == 'pass0':
+          count_p0+=1
+        if hit['pass'] == 'pass1':
+          count_p1+=1
+        elif hit['pass'] == 'pass2':
           count_p2+=1
         hit_parade["hits"].append(hit)
         new = Hit(
@@ -971,10 +928,10 @@ def align_wdlocal(pk, **kwargs):
   hit_parade['summary'] = {
       'count':qs.count(),
       'got_hits':count_hit,
-      'total_hits': total_hits, 
-      'pass0': count_p0, 
-      'pass1': count_p1, 
-      'pass2': count_p2, 
+      'total_hits': total_hits,
+      'pass0': count_p0,
+      'pass1': count_p1,
+      'pass2': count_p2,
       'no_hits': {'count': count_nohit },
       'elapsed': elapsed(end-start)
     }
@@ -982,7 +939,7 @@ def align_wdlocal(pk, **kwargs):
 
   # create log entry and update ds status
   post_recon_update(ds, user, 'wdlocal', test)
-    
+
   # email owner when complete
   task_emailer.delay(
     task_id,
@@ -993,7 +950,7 @@ def align_wdlocal(pk, **kwargs):
     total_hits,
     test
   )
-  
+
   return hit_parade['summary']
 
 
@@ -1011,14 +968,14 @@ def es_lookup_idx(qobj, *args, **kwargs):
   [hitobjlist, _ids] = [[],[]]
   #ds_hits = {}
   #hit_count, err_count = [0,0]
-  
+
   # empty result object
   result_obj = {
-    'place_id': qobj['place_id'], 
-    'title': qobj['title'], 
+    'place_id': qobj['place_id'],
+    'title': qobj['title'],
     'hits':[], 'missed':-1, 'total_hits':0,
     'hit_count': 0
-  }  
+  }
   # de-dupe
   variants = list(set(qobj["variants"]))
   links = list(set(qobj["links"]))
@@ -1030,7 +987,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
   has_bounds = bounds["id"] != ["0"]
   has_geom = "geom" in qobj.keys()
   has_countries = len(qobj["countries"]) > 0
-    
+
   if has_bounds:
     area_filter = get_bounds_filter(bounds, "whg")
     #print("area_filter", area_filter)
@@ -1047,7 +1004,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
   if has_countries:
     countries_match = {"terms": {"ccodes":qobj["countries"]}}
     #print("countries_match", countries_match)
-  
+
   """
   prepare queries from qobj
   """
@@ -1060,7 +1017,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
 
 
   # build q1 from qbase + spatial context, fclasses if any
-  qbase = {"size": 100,"query": { 
+  qbase = {"size": 100,"query": {
     "bool": {
       "must": [
         {"exists": {"field": "whg_id"}},
@@ -1086,11 +1043,11 @@ def es_lookup_idx(qobj, *args, **kwargs):
   # ADD SPATIAL
   if has_geom:
     qbase["query"]["bool"]["filter"].append(shape_filter)
-    
+
   # no geom, use country codes if there
   if not has_geom and has_countries:
     qbase["query"]["bool"]["must"].append(countries_match)
-    
+
   # has no geom but has bounds (region or user study area)
   if not has_geom and has_bounds:
     # area_filter (predefined region or study area)
@@ -1128,7 +1085,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
       relation = h["_source"]["relation"]
       hitobj = {
         "_id":h['_id'],
-        "pid":h["_source"]['place_id'], 
+        "pid":h["_source"]['place_id'],
         "title":h["_source"]['title'],
         "dataset":h["_source"]['dataset'],
         "pass":"pass0",
@@ -1136,7 +1093,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
             for l in h["_source"]["links"]],
         "role":relation["name"],
         "children":h["_source"]["children"]
-      }        
+      }
       if "parent" in relation.keys():
         hitobj["parent"] = relation["parent"]
       # add profile to hitlist
@@ -1162,7 +1119,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
         if h['_id'] not in _ids:
           _ids.append(h['_id'])
           relation = h["_source"]["relation"]
-          h["pass"] = "pass0b"        
+          h["pass"] = "pass0b"
           hitobj = {
             "_id":h['_id'],
             "pid":h["_source"]['place_id'],
@@ -1173,15 +1130,15 @@ def es_lookup_idx(qobj, *args, **kwargs):
                 for l in h["_source"]["links"]],
             "role":relation["name"],
             "children":h["_source"]["children"]
-          }        
+          }
           if "parent" in relation.keys():
             hitobj["parent"] = relation["parent"]
           if hitobj['_id'] not in [h['_id'] for h in hitobjlist]:
             result_obj["hits"].append(h)
             hitobjlist.append(hitobj)
           result_obj['total_hits'] = len((result_obj["hits"]))
-      
-  #   
+
+  #
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   # run pass1 whether pass0 had hits or not
   # q0 only found identifier matches
@@ -1191,7 +1148,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
     result1 = es.search(index=idx, body=q1)
     hits1 = result1["hits"]["hits"]
   except:
-    print("q1, ES error:", q1, sys.exc_info())  
+    print("q1, ES error:", q1, sys.exc_info())
     h["pass"] = "pass1"
 
   result_obj['hit_count'] += len(hits1)
@@ -1202,7 +1159,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
     if h['_id'] not in _ids:
       _ids.append(h['_id'])
       relation = h["_source"]["relation"]
-      h["pass"] = "pass1"        
+      h["pass"] = "pass1"
       hitobj = {
         "_id":h['_id'],
         "pid":h["_source"]['place_id'],
@@ -1213,7 +1170,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
             for l in h["_source"]["links"]],
         "role":relation["name"],
         "children":h["_source"]["children"]
-      }        
+      }
       if "parent" in relation.keys():
         hitobj["parent"] = relation["parent"]
       if hitobj['_id'] not in [h['_id'] for h in hitobjlist]:
@@ -1223,7 +1180,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
       result_obj['total_hits'] = len(result_obj["hits"])
   #ds_hits[p.id] = hitobjlist
   # no more need for hitobjlist
-  
+
   # return index docs to align_idx() for Hit writing
   return result_obj
 
@@ -1231,7 +1188,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
 # align/accession to whg index
 # gets result_obj per Place
 # writes 'union' Hit records to db for review
-# OR writes seed parent to whg index 
+# OR writes seed parent to whg index
 """
 # TODO (1): "passive analysis option" reports unmatched and matched only
 # TODO (2): "passive analysis option" that reports matches within datasets in a collection
@@ -1247,38 +1204,38 @@ def align_idx(pk, *args, **kwargs):
   # get last index identifier (used for _id)
   whg_id = maxID(es, idx)
   """
-  kwargs: {'ds': 1231, 'dslabel': 'owt10b', 'owner': 14, 'user': 1, 
-    'bounds': {'type': ['userarea'], 'id': ['0']}, 'aug_geom': 'on', 
+  kwargs: {'ds': 1231, 'dslabel': 'owt10b', 'owner': 14, 'user': 1,
+    'bounds': {'type': ['userarea'], 'id': ['0']}, 'aug_geom': 'on',
     'scope': 'all', 'lang': 'en', 'test': 'false'}
   """
   """
-    {'csrfmiddlewaretoken': ['Z3vg1TOlJRNTYSErmyNYuuaoTYMmk8235pMea2nXHtxvpfmvmdqPsqRHeefFqt2u'], 
-    'ds': ['1231'], 
-    'wd_lang': [''], 
-    'recon': ['idx'], 
+    {'csrfmiddlewaretoken': ['Z3vg1TOlJRNTYSErmyNYuuaoTYMmk8235pMea2nXHtxvpfmvmdqPsqRHeefFqt2u'],
+    'ds': ['1231'],
+    'wd_lang': [''],
+    'recon': ['idx'],
     'lang': ['']}>
   """
   # open file for writing new seed/parents for inspection
   # wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
   # fn1 = "new-parents_"+str(ds.id)+".txt"
   # fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
-  
+
   # bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
   scope = kwargs['scope']
-  
+
   hit_parade = {"summary": {}, "hits": []}
   [count_hit,count_nohit,total_hits,count_p0,count_p1] = [0,0,0,0,0]
   [count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0]
-  new_seeds = []  
+  new_seeds = []
   start = datetime.datetime.now()
-    
+
   # limit scope if some are already indexed
   qs = ds.places.filter(indexed=False)
   # TODO: scope = 'all' should be not possible for align_idx
   # qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False) \
   #   if scope == 'unindexed' else ds.places.filter(review_wd != 1)
-  
+
   """
   for each place, create qobj and run es_lookup_idx(qobj)
   if hits: write Hit instances for review
@@ -1307,14 +1264,14 @@ def align_idx(pk, *args, **kwargs):
         p.indexed = True
         p.save()
         # es.index(idx, doc, id=whg_id)
-      
+
     # got some hits, format json & write to db as for align_wdlocal, etc.
     elif len(result_obj['hits']) > 0:
       count_hit +=1  # this record got >=1 hits
       # set place/task status to 0 (has unreviewed hits)
       p.review_whg = 0
       p.save()
-      
+
       hits = result_obj['hits']
       [count_kids,count_errors] = [0,0]
       total_hits += result_obj['total_hits']
@@ -1357,7 +1314,7 @@ def align_idx(pk, *args, **kwargs):
           'geoms': list(uniq_geom(par['geoms'])),
           'links': par['links'],
           'sources': [
-            {'dslabel': par['dataset'], 
+            {'dslabel': par['dataset'],
              'pid': par['pid'],
              'variants': par['variants'],
              'types': par['types'],
@@ -1370,7 +1327,7 @@ def align_idx(pk, *args, **kwargs):
         if kids:
           hitobj['titles'].extend([k['title'] for k in kids])
           hitobj['countries'].extend([','.join(k['countries']) for k in kids])
-          
+
           # hotfix 20 Mar 24
           if 'geoms' in hitobj.keys() and hitobj['geoms'] is not None:
             hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
@@ -1378,9 +1335,12 @@ def align_idx(pk, *args, **kwargs):
               hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
 
           # unnest
-          # hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
-          # hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
-          
+          # TODO: hotfix 20 Mar 24 ... why was this necessary?
+          if 'geoms' in hitobj.keys() and hitobj['geoms'] is not None:
+            hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
+          if 'links' in hitobj.keys() and hitobj['links'] is not None:
+              hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
+
           # add kids to parent in sources
           hitobj['sources'].extend(
             [{'dslabel':k['dataset'],
@@ -1395,21 +1355,21 @@ def align_idx(pk, *args, **kwargs):
         hitobj['passes'] = passes
 
         hitobj['titles'] = ', '.join(list(dict.fromkeys(hitobj['titles'])))
-        
+
         if hitobj['links']:
           hitobj['links'] = list(dict.fromkeys(hitobj['links']))
-  
+
         hitobj['countries'] = ', '.join(list(dict.fromkeys(hitobj['countries'])))
 
         new = Hit(
           task_id = task_id,
           authority = 'whg',
-          
+
           # incoming place
           dataset = ds,
-          place = p, 
+          place = p,
           src_id = p.src_id,
-          
+
           # candidate parent, might have children
           authrecord_id = par['_id'],
           query_pass = ', '.join(passes), #
@@ -1421,26 +1381,26 @@ def align_idx(pk, *args, **kwargs):
         )
         new.save()
         #print(json.dumps(jsonic,indent=2))
-  
+
   # testing: write new index seed/parent docs for inspection
   # fout1.write(json.dumps(new_seeds, indent=2))
   # fout1.close()
   # print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
-  
+
   end = datetime.datetime.now()
-  
+
   hit_parade['summary'] = {
     'count':qs.count(), # records in dataset
     'got_hits':count_hit, # count of parents
     'total_hits': total_hits, # overall total
     'seeds': len(new_seeds), # new index seeds
-    'pass0': count_p0, 
-    'pass1': count_p1, 
+    'pass0': count_p0,
+    'pass1': count_p1,
     'elapsed_min': elapsed(end-start),
     'skipped': count_fail
   }
   print("hit_parade['summary']",hit_parade['summary'])
-  
+
   # create log entry and update ds status
   post_recon_update(ds, user, 'idx', test)
 
@@ -1453,7 +1413,7 @@ def align_idx(pk, *args, **kwargs):
     count_hit,
     total_hits,
     test,
-  )    
+  )
   print('elapsed time:', elapsed(end-start))
 
 

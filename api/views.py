@@ -45,9 +45,9 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 #
 # External API
-# 
 #
-""" 
+#
+"""
   /remote/
   search place index (always whg) parent records
   params: name, name_startswith, fclass, ccode, area, dataset, collection, pagesize, fuzzy
@@ -236,7 +236,7 @@ def makeGeom(geom):
   #print('geom',geom)
   # TODO: account for non-point
   if len(geom) > 1:
-    geomobj = {"type":"GeometryCollection", "geometries": []}  
+    geomobj = {"type":"GeometryCollection", "geometries": []}
     for g in geom:
       geomobj['geometries'].append(g['location'])
         #{"type":g['location']['type'],
@@ -249,7 +249,7 @@ def makeGeom(geom):
 
 """
   collectionItem(); called by collector();
-  formats api search hits 
+  formats api search hits
   TODO: rename
 """
 def collectionItem(i):
@@ -269,7 +269,10 @@ def collectionItem(i):
       "child_place_ids":[int(c) for c in i['children']],
       "dataset":i['dataset'],
       "fclasses": [c for c in i['fclasses']],
-      "placetypes": [t['sourceLabel'] if 'sourceLabel' in t else (t['source_label'] if 'source_label' in t else []) for t in i['types']],
+      # "placetypes":[t['sourceLabel'] for t in i['types']],
+      "placetypes": [t['sourceLabel'] if 'sourceLabel' in t else
+                     (t['source_label'] if 'source_label' in t else []) for
+                     t in i['types']],
       "variants":[n for n in i['suggest']['input'] if n != i['title']],
       'links':i['links'],
       "timespans":i['timespans'],
@@ -310,7 +313,7 @@ def collector(q, idx):
 
 """
   bundler();  called by IndexAPIView, case api/index?whgid=
-  execute es.search, return post-processed results 
+  execute es.search, return post-processed results
 """
 def bundler(q, whgid, idx):
   es = settings.ES_CONN
@@ -331,7 +334,7 @@ def bundler(q, whgid, idx):
   stuff = [ collectionItem(i) for i in bundle]
   return stuff
 
-""" 
+"""
   /api/index?
   search place index (always whg) parent records
   based on search.views.SearchView(View)
@@ -357,7 +360,7 @@ class IndexAPIView(View):
     pagesize = params.get('pagesize', None)
     area = request.GET.get('area')
     idx = 'whg'
-    
+
     if all(v is None for v in [name, name_startswith, whgid,pid]):
       # TODO: format better
       return HttpResponse(content='<h3>Query requires either name, pid, or whgid</h3>'+'<p><a href="/usingapi/">API instructions</a>')
@@ -397,14 +400,14 @@ class IndexAPIView(View):
         if year:
           q['query']['bool']['must'].append({"term":{"timespans":{"value": year}}})
         #if area:
-          #TODO: 
+          #TODO:
         if area:
           a = get_object_or_404(Area,pk=area)
           bounds={"id":[str(a.id)],"type":[a.type]} # nec. b/c some are polygons, some are multipolygons
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
 
         print('the api query was:',q)
-        
+
         # run query
         # TODO; rename from collection to avoid confusing with Collection
         collection = collector(q, 'whg')
@@ -423,10 +426,10 @@ class IndexAPIView(View):
     # to client
     return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
-""" 
+"""
   /api/db?
   SearchAPIView()
-  return lpf results from database search 
+  return lpf results from database search
 """
 class SearchAPIView(generics.ListAPIView):
   renderer_classes = [JSONRenderer]
@@ -451,7 +454,7 @@ class SearchAPIView(generics.ListAPIView):
     context = params.get('context',None)
     # params
     print({"id_":id_, "fclasses":fclasses})
-    
+
     qs = Place.objects.filter(Q(dataset__public=True) | Q(dataset__core=True))
 
     if all(v is None for v in [name,name_contains,id_]):
@@ -466,22 +469,22 @@ class SearchAPIView(generics.ListAPIView):
       else:
         qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
         qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
-        
+
         if name_contains:
           qs = qs.filter(title__icontains=name_contains)
         elif name and name != '':
           #qs = qs.filter(title__istartswith=name)
           qs = qs.filter(names__jsonb__toponym__icontains=name)
-  
+
         qs = qs.filter(dataset=ds) if ds else qs
         qs = qs.filter(ccodes__overlap=cc) if cc else qs
-        
+
       filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
 
       #serial = LPFSerializer if context else SearchDatabaseSerializer
       serial = LPFSerializer
       serializer = serial(filtered, many=True, context={'request': self.request})
-      
+
       serialized_data = serializer.data
       result = {"count":qs.count(),
                 "pagesize": len(filtered),
@@ -496,10 +499,10 @@ class SearchAPIView(generics.ListAPIView):
 
 """ *** """
 """ TODO: the next two attempt the same and are WAY TOO SLOW """
-""" 
+"""
     !!! NOT IN USE !!! 21 MAY 2023
     api/places/<str:dslabel>/[?q={string}]
-    Paged list of places in dataset. 
+    Paged list of places in dataset.
 """
 class PlaceAPIView(generics.ListAPIView):
   serializer_class = PlaceSerializer
@@ -523,8 +526,8 @@ class PlaceAPIView(generics.ListAPIView):
 
   permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
-  
-""" 
+
+"""
     !!! NOT IN USE !!! 21 MAY 2023
     api/dataset/<str:dslabel>/lpf/
     all places in a dataset, for download
@@ -552,13 +555,13 @@ class DownloadDatasetAPIView(generics.ListAPIView):
       }
       #print('rec',rec)
       features.append(rec)
-    
+
     result={"type":"FeatureCollection", "features": features}
     print('result',result)
     return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
   #permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
- 
+
 """
   /api/datasets? > query public datasets by id, label, term
 """
@@ -573,9 +576,9 @@ class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
     id_ = params.get('id', None)
     dslabel = params.get('label', None)
     query = params.get('q', None)
-    
+
     qs = Dataset.objects.filter(Q(public=True) | Q(core=True)).order_by('label')
-    
+
     if id_:
       qs = qs.filter(id = id_)
     elif dslabel:
@@ -599,20 +602,20 @@ class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
 # geojson feature for api
 class AreaFeaturesView(generics.ListAPIView):
   #@staticmethod
-  
+
   def get(self, format=None, *args, **kwargs):
-    params=self.request.query_params  
+    params=self.request.query_params
     user = self.request.user
     print('params', params)
     print('api/areas request',self.request)
-    
+
     id_ = params.get('id', None)
     query = params.get('q', None)
     filter = params.get('filter', None)
-    
+
     areas = []
     qs = Area.objects.all().filter((Q(type='predefined'))).values('id','title','type','description','geojson')
-    
+
     # filter for parameters
     if id_:
       qs=qs.filter(id=id_)
@@ -621,7 +624,7 @@ class AreaFeaturesView(generics.ListAPIView):
     if filter and filter == 'un':
       qs = qs.filter(description="UN Statistical Division Sub-Region")
 
-      
+
     for a in qs:
       feat = {
         "type":"Feature",
@@ -629,9 +632,9 @@ class AreaFeaturesView(generics.ListAPIView):
         "geometry":a['geojson']
       }
       areas.append(feat)
-      
-    return JsonResponse(areas, safe=False)  
-  
+
+    return JsonResponse(areas, safe=False)
+
 class UserList(generics.ListAPIView):
   queryset = User.objects.all()
   serializer_class = UserSerializer
@@ -651,10 +654,10 @@ def api_root(request, format=None):
   })
 
 
-class PrettyJsonRenderer(JSONRenderer):    
+class PrettyJsonRenderer(JSONRenderer):
   def get_indent(self, accepted_media_type, renderer_context):
     return 2
-  
+
 #
 
 # IN USE May 2020
@@ -703,9 +706,9 @@ class PlaceDetailSourceAPIView(generics.RetrieveAPIView):
   authentication_classes = [SessionAuthentication]
 
 
-""" 
-    /api/geoms?ds={{ ds.label }}} 
-    /api/geoms?coll={{ coll.id }}} 
+"""
+    /api/geoms?ds={{ ds.label }}}
+    /api/geoms?coll={{ coll.id }}}
     in ds_browse and ds_places for all geoms if < 15k
     TODO: this needs refactor (make collection.geometries @property?)
 """
@@ -731,7 +734,7 @@ class GeomViewSet(viewsets.ModelViewSet):
         jsonb__type__icontains='Point')
     return qs
 
-""" 
+"""
     /api/geojson/{{ ds.id }}
 """
 #class GeoJSONViewSet(viewsets.ModelViewSet):
@@ -741,7 +744,7 @@ class GeoJSONAPIView(generics.ListAPIView):
   #serializer_class = GeoJsonSerializer
   serializer_class = FeatureSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-  
+
   def get_queryset(self, format=None, *args, **kwargs):
     print('GeoJSONViewSet request.GET',self.request.GET)
     print('GeoJSONViewSet args, kwargs',args, kwargs)
@@ -754,7 +757,7 @@ class GeoJSONAPIView(generics.ListAPIView):
       cid = self.request.GET.get('coll')
       coll = Collection.objects.get(id=cid)
       collPlaceIds = [p.id for p in coll.places.all()]
-      qs = PlaceGeom.objects.filter(place_id__in=collPlaceIds,jsonb__type='Point')    
+      qs = PlaceGeom.objects.filter(place_id__in=collPlaceIds,jsonb__type='Point')
     #print('qs',qs)
     return qs
 
@@ -845,9 +848,9 @@ class AreaListView(View):
     for a in qs:
       area = {"id":a['id'],"title":a['title'],"type":a['type']}
       area_list.append(area)
-      
+
     return JsonResponse(area_list, safe=False)
-  
+
 """
   areas/
 
@@ -864,10 +867,10 @@ class AreaListAllView(View):
     for a in qs:
       area = {"id":a['id'],"title":a['title'],"type":a['type']}
       area_list.append(area)
-      
+
     return JsonResponse(area_list, safe=False)
 
-  
+
 """
     area/<int:pk>/
     in dataset.html#addtask
@@ -884,4 +887,3 @@ class RegionViewSet(View):
   queryset = Area.objects.filter(
       description='UN Statistical Division Sub-Region').order_by('title')
   serializer_class = AreaSerializer
-

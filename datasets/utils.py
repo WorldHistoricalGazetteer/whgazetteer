@@ -1145,6 +1145,8 @@ def status_emailer(ds, task_name):
 	msg.attach_alternative(html_content, "text/html")
 	msg.send(fail_silently=False)
 
+
+
 # TODO: make this faster?
 class UpdateCountsView(View):
 	""" Returns counts of unreviewed records, per pass and total; also deferred per task
