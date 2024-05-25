@@ -18,6 +18,8 @@ media/data/
 media/datasets/
 media/downloads/
 media/resources/
+media/orphans/
+media/orphans.zip
 media/user*
 
 */migrations/0*.py

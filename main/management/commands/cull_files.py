@@ -37,7 +37,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'Total files size: {total_files_size} MB'))
 
         for orphaned_file in orphaned_files:
-            # self.stdout.write(self.style.WARNING(f'Orphaned file: {orphaned_file}'))
+        #     self.stdout.write(self.style.WARNING(f'Orphaned file: {orphaned_file}'))
             # Uncomment the lines below to move the orphaned files to media/orphans and zip them
             shutil.move(orphaned_file, 'media/orphans')
             shutil.make_archive('media/orphans', 'zip', 'media/orphans')
