@@ -58,17 +58,25 @@
         <div id="coll_types" class="row mt-2">
 	        <div id="dscoll_blurb" class="col-sm-6">
 		        <h5><b>Dataset</b> collections
+				<span class="float-right" style="cursor: pointer; color: #336699;" onclick="alert('Sorry, collection creation and editing is disabled for a few days while we migrate to version 3. We will send one of our very occasional emails when the transition is complete.')">
+				    {% fontawesome_icon 'plus-square' color='#336699' %} upload new
+				</span>
+			        {% comment %}
 			        <span class="smaller float-right pr-2 pt-1">
 				        <a href="{% url 'collection:ds-collection-create' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
-			        </span>
+			        </span>{% endcomment %}
 		        </h5>
 		        <p>A <b>Dataset Collection</b> is a set of public datasets, typically from multiple contributors and linked to define a "focus domain" within World Historical Gazetteer. As with all collections, searches, downloads and API calls can be constrained to include only places in the collection's member datasets.</p>
 	        </div>
 	        <div id="placecoll_blurb" class="col-sm-6">
 		        <h5><b>Place</b> collections
+				<span class="float-right" style="cursor: pointer; color: #336699;" onclick="alert('Sorry, collection creation and editing is disabled for a few days while we migrate to version 3. We will send one of our very occasional emails when the transition is complete.')">
+				    {% fontawesome_icon 'plus-square' color='#336699' %} upload new
+				</span>
+			        {% comment %}
 			        <span class="smaller float-right pr-2 pt-1">
 				        <a href="{% url 'collection:place-collection-create' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
-			        </span>
+			        </span>{% endcomment %}
 		        </h5>
 		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more public dataset, as well as individual places discovered in WHG search results and browse screens. Any of its place records can be annotated with information pertaining to its membership in the collection. <a href="{% url 'main:tute-place_collections' %}">Guide {% fontawesome_icon 'question-circle' color='#336699' %}</a>
 	        </div>
@@ -122,11 +130,13 @@
 	                    {% elif coll.collection_class == 'place' %}
 	                      <a href="{% url 'collection:place-collection-browse' coll.id %}">view</a>&nbsp;
 	                    {% endif %}
+                      {% comment %}
 	                    {% if coll.collection_class == 'dataset' %}
 	                      <a href="{% url 'collection:ds-collection-update' coll.id %}">edit</a>&nbsp;
 	                    {% elif coll.collection_class == 'place' %}
 	                      <a href="{% url 'collection:place-collection-update' coll.id %}">edit</a>&nbsp;
 	                    {% endif %}
+	                    {% endcomment %}
                     </td>
                     <td>{{ coll.rowcount }}</td>
 										<td class="small">{{ coll.created|date:"Y-m-d, H:i" }}</td>
