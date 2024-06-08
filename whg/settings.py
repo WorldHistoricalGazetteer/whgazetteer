@@ -124,6 +124,8 @@ DJANGORESIZED_DEFAULT_FORCE_FORMAT = 'JPEG'
 DJANGORESIZED_DEFAULT_FORMAT_EXTENSIONS = {'JPEG': ".jpg"}
 DJANGORESIZED_DEFAULT_NORMALIZE_ROTATION = True
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
+
 # replacement section from drf-datatables
 # https://django-rest-framework-datatables.readthedocs.io/en/latest/
 REST_FRAMEWORK = {
@@ -176,16 +178,15 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'whg/logs/debug.log',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'whg/logs/debug.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
+    'root': {
+        'handlers': ['file'],
+        'level': 'DEBUG',
     },
 }
 

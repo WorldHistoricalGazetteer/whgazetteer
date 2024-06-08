@@ -149,7 +149,7 @@
 
             {% if record.descriptions %}
               {% for d in record.descriptions.all %}
-              <p><strong>Description</strong>: {{d.jsonb.value}}</p>
+              <p><strong>Description</strong>: {{d.jsonb.value|readmore:200|safe}}</p>
               {%endfor%}
             {% endif %}
           </div>
@@ -174,7 +174,7 @@
                     <!--{ if form.json.value|get:"geoms" != Null }-->
                       <a class="geolink" rel="tooltip" 
                         {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}
-                          id="{{ form.json.value|get:"place_id" }}" 
+                          id="{{ form.json.value|get:'place_id' }}" 
                         {% else %}
                           id="{{ form.authrecord_id.value }}"
                         {% endif %}
@@ -185,7 +185,7 @@
                   <span class="inline">{{ form.match }}</span>
                   {% if authority == 'idx' %}
                     <button type="button" 
-                      data-id="{{ form.json.value|get:"place_id" }}" 
+                      data-id="{{ form.json.value|get:'place_id' }}" 
                       class="create-comment-review btn btn-sm" style="background-color:oldlace;">
                     {% fontawesome_icon 'edit' color='#336699' %}</button>
                   {% else %}
@@ -212,7 +212,7 @@
                   {% else %}
                   <p><strong>{{ authority|upper }} ID</strong>: 
                   {% endif %}
-                  <a href="" data-auth={{authority}} class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a>{% fontawesome_icon 'external-link' color='#336699' %}
+                  <a href="" data-auth="{{authority}}" class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a>{% fontawesome_icon 'external-link' color='#336699' %}
                   </p>
                 {% endif %}
                 
@@ -284,6 +284,20 @@
 </div>
 
 <script type="text/javascript">
+  $(".a_more_descrip").click(function(e){
+    clicked = $(this)
+    clicked.hide()
+    clicked.parent().find("#dots").hide()
+    clicked.next().show()
+    $(".a_less_descrip").show()
+  })
+  $(".a_less_descrip").click(function(e){
+    clicked = $(this)
+    clicked.hide() // hide 'less' link
+    $(".more_descrip").hide() // hide the extra text again
+    $("#dots").show() // show dots again
+    $(".a_more_descrip").show() // show more link again
+  })  
   $(".help-matches").click(function(){
     page=$(this).data('id')
     $('.selector').dialog('open');

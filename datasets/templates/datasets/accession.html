@@ -16,7 +16,7 @@
 {% block content %}
 <div class="container">
   <h5 class="mb-2 mt-3">
-	  {% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review foo
+	  {% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review
 	  {% if deferred is True %}
 	    (<span class="text-danger">"deferred"</span>)
 	  {% endif %}
@@ -129,9 +129,10 @@
             {% endif %}
 
             {% if record.descriptions %}
+              <p><strong>Description</strong>: 
               {% for d in record.descriptions.all %}
-              <p><strong>Description</strong>: {{d.jsonb.value}}</p>
-              {%endfor%}
+              {{d.jsonb.value}}; 
+              {%endfor%}</p>
             {% endif %}
           </div> <!-- place_record -->
           <div id="map">

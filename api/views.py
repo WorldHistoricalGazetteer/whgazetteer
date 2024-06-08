@@ -269,7 +269,7 @@ def collectionItem(i):
       "child_place_ids":[int(c) for c in i['children']],
       "dataset":i['dataset'],
       "fclasses": [c for c in i['fclasses']],
-      "placetypes":[t['sourceLabel'] for t in i['types']],
+      "placetypes": [t['sourceLabel'] if 'sourceLabel' in t else (t['source_label'] if 'source_label' in t else []) for t in i['types']],
       "variants":[n for n in i['suggest']['input'] if n != i['title']],
       'links':i['links'],
       "timespans":i['timespans'],
@@ -445,7 +445,8 @@ class SearchAPIView(generics.ListAPIView):
     fc = params.get('fc',None)
     fclasses=list(set([x.upper() for x in ','.join(fc)])) if fc else None
     year = params.get('year',None)
-    pagesize = int(params.get('pagesize',None))
+    # pagesize = int(params.get('pagesize',None))
+    pagesize = params.get('pagesize',None)
     err_note = None
     context = params.get('context',None)
     # params

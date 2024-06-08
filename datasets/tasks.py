@@ -884,7 +884,7 @@ def align_wdlocal(pk, **kwargs):
 
     # types (Getty AAT integer ids if available)
     for t in place.types.all():
-      if t.jsonb['identifier'].startswith('aat:'):
+      if 'identifier' in t.jsonb and t.jsonb['identifier'].startswith('aat:'):
         types.append(int(t.jsonb['identifier'].replace('aat:','')) )
     qobj['placetypes'] = types
 
@@ -1371,9 +1371,15 @@ def align_idx(pk, *args, **kwargs):
           hitobj['titles'].extend([k['title'] for k in kids])
           hitobj['countries'].extend([','.join(k['countries']) for k in kids])
           
+          # hotfix 20 Mar 24
+          if 'geoms' in hitobj.keys() and hitobj['geoms'] is not None:
+            hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
+          if 'links' in hitobj.keys() and hitobj['links'] is not None:
+              hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
+
           # unnest
-          hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
-          hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
+          # hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
+          # hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
           
           # add kids to parent in sources
           hitobj['sources'].extend(
