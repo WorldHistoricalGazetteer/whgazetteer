@@ -48,6 +48,10 @@
     <div class="tab-content">
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
         <p class="mb-1 ml-1">
+				<span style="cursor: pointer; color: #336699;" onclick="alert('Sorry, dataset creation and editing is disabled for a few days while we migrate to version 3. We will send one of our very occasional emails when the transition is complete')">
+				    {% fontawesome_icon 'plus-square' color='#336699' %} upload new
+				</span>
+            {% comment %}
 	          <a href="{% url 'datasets:dataset-create' %}" class="">
 		          {% fontawesome_icon 'plus-square' color='#336699' %} upload new</a>
 						{% if user|has_group:"beta30" or whgteam %}
@@ -56,6 +60,7 @@
 	              {% fontawesome_icon 'plus-square' color='#336699' %} new empty</a>
 							</span>
 						{% endif %}
+						{% endcomment %}
 	        {% if whgteam %}
           <span class="ml-2 float-right small">
 	          <select id="status_select">
@@ -73,6 +78,7 @@
         <div id="dataset_list" class="mt-1">
           <div class="list-box">
             <h6 class="my-2">My Datasets
+	            <span class="red-bold ml-3">(8 June 2024) Migrating to v3: creation and editing temporarily disabled. </span>
 	            <span class="smaller float-right pr-4"><i class="small fa fa-users" style="color:grey;"></i> = Collaborator</span>
             </h6>
             {% if dataset_list|length == 0 %}<p class="smaller"><i>None yet...</i></p>
@@ -94,9 +100,11 @@
                 {% for d in dataset_list %}
                   <tr class="place-row">
                     <td>{{ d.id }}</td>
-                    <td>
+                    <td>{{ d.title }}
+                    {% comment %}
                     <a href="{% url 'datasets:ds_summary' d.id %}" title="Dataset details" rel="tooltip">
-	                    {{ d.title }}</a>
+	                    {{ d.title }}
+                    </a>{% endcomment %}
 	                    {% if not user == d.owner %}
 		                    <span class="smaller ml-3">
 			                    <i class="small fa fa-users" style="color:grey;"></i></span>

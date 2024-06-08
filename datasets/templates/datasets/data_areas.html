@@ -47,8 +47,14 @@
     </ul>
     <div class="tab-content">
       <div id="arealist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="arealist-tab">
+				<span style="cursor: pointer; color: #336699;" onclick="alert('Sorry, study area creation and editing is disabled for a few days while we migrate to version 3. We will send one of our very occasional emails when the transition is complete.')">
+				    {% fontawesome_icon 'plus-square' color='#336699' %} upload new
+				</span>
+	      <span class="red-bold ml-3">(8 June 2024) Migrating to v3: creation and editing temporarily disabled. </span>
+				{% comment %}
         <p class="mb-1 ml-1"><a href="{% url 'areas:area-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
+        </p>{% endcomment %}
         <div id="area_list" class="mt-1 ml-0">
           <div class="list-box">
             <table id="table_areas" class="table table-striped">
@@ -62,7 +68,8 @@
                 {% for a in area_list %}
                   <tr class="place-row">
                     <td>{{ a.id }}</td>
-                    <td><a href="{% url 'areas:area-update' a.id %}">{{ a.title }}</a></td>
+                    {% comment %}<td><a href="{% url 'areas:area-update' a.id %}">{{ a.title }}</a></td>{% endcomment %}
+                    <td>{{ a.title }}</td>
                     <td>{{ a.type }}</td>
                     <td>{{ a.ccodes }}</td>
                   </tr>

@@ -2273,7 +2273,10 @@ class DataListsView(LoginRequiredMixin, ListView):
       queryset = Resource.objects
 
     if is_whg_team_member:
-      return queryset.all().distinct().order_by('-created')
+      if self.request.path == reverse('data-areas'):
+        return queryset.all().distinct().order_by('-created')
+      else:
+        return queryset.all().distinct().order_by('-create_date')
     else:
       return queryset.filter(owner=user).distinct().order_by('-created')
 
